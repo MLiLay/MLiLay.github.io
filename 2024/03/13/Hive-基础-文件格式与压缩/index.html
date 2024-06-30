@@ -1,0 +1,264 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Hive-文件格式与压缩 | Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="文件格式行存储的特点查询满足条件的一整行数据的时候，列存储则需要去每个聚集的字段找到对应的每个列的值，行存储只需要找到其中一个值，其余的值都在相邻地方，所以此时行存储查询的速度更快。 列存储的特点因为每个字段的数据聚集存储，在查询只需要少数几个字段的时候，能大大减少读取的数据量； 每个字段的数据类型一定是相同的，列式存储可以针对性的设计更好的设计压缩算法。 前文提到的text file和seque">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hive-文件格式与压缩">
+<meta property="og:url" content="http://example.com/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8E%8B%E7%BC%A9/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="文件格式行存储的特点查询满足条件的一整行数据的时候，列存储则需要去每个聚集的字段找到对应的每个列的值，行存储只需要找到其中一个值，其余的值都在相邻地方，所以此时行存储查询的速度更快。 列存储的特点因为每个字段的数据聚集存储，在查询只需要少数几个字段的时候，能大大减少读取的数据量； 每个字段的数据类型一定是相同的，列式存储可以针对性的设计更好的设计压缩算法。 前文提到的text file和seque">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:published_time" content="2024-03-13T08:22:43.978Z">
+<meta property="article:modified_time" content="2024-06-29T10:10:01.657Z">
+<meta property="article:author" content="CHLi">
+<meta property="article:tag" content="Hive">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8E%8B%E7%BC%A9/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hive-文件格式与压缩',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-29 18:10:01'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Hive-文件格式与压缩</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-13T08:22:43.978Z" title="发表于 2024-03-13 16:22:43">2024-03-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-29T10:10:01.657Z" title="更新于 2024-06-29 18:10:01">2024-06-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Hive/">Hive</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Hive-文件格式与压缩"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="文件格式"><a href="#文件格式" class="headerlink" title="文件格式"></a>文件格式</h1><h3 id="行存储的特点"><a href="#行存储的特点" class="headerlink" title="行存储的特点"></a>行存储的特点</h3><p>查询满足条件的一整行数据的时候，列存储则需要去每个聚集的字段找到对应的每个列的值，行存储只需要找到其中一个值，其余的值都在相邻地方，所以此时行存储查询的速度更快。</p>
+<h3 id="列存储的特点"><a href="#列存储的特点" class="headerlink" title="列存储的特点"></a>列存储的特点</h3><p>因为每个字段的数据聚集存储，在查询只需要少数几个字段的时候，能大大减少读取的数据量；</p>
+<p>每个字段的数据类型一定是相同的，列式存储可以针对性的设计更好的设计压缩算法。</p>
+<p>前文提到的text file和sequence file都是基于行存储的，orc和parquet是基于列式存储的。</p>
+<h2 id="ORC"><a href="#ORC" class="headerlink" title="ORC"></a>ORC</h2><p>ORC（Optimized Row Columnar）file format是Hive 0.11版里引入的一种列式存储的文件格式。ORC文件能够提高Hive读写数据和处理数据的性能。</p>
+<h3 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h3><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240313161044.png" alt="image.png"></p>
+<p>ORC 文件结构由三部分组成:</p>
+<ul>
+<li><strong>条带（stripe）</strong>：ORC 文件存储数据的地方。</li>
+<li><strong>文件脚注（file footer）</strong>：包含了文件中 stripe 的列表，每个 stripe 的行数，以及每个列的数据类型。它还包含每个列的最小值、最大值、行计数、 求和等聚合信息。</li>
+<li><strong>postscript</strong>：含有压缩参数和压缩大小相关的信息。</li>
+</ul>
+<p>stripe 结构同样可以分为三部分：index data、rows data 和 stripe footer：</p>
+<ul>
+<li><strong>index data</strong>：保存了所在条带的一些统计信息，以及数据在 stripe 中的位置索引信息。</li>
+<li><strong>rows data</strong>：数据存储的地方，由多个行组构成，数据以流（stream）的形式进行存储。</li>
+<li><strong>stripe footer</strong>：保存数据所在的文件目录。</li>
+</ul>
+<p>rows data 存储两部分的数据，即 metadata stream 和 data stream：</p>
+<ul>
+<li><strong>metadata stream</strong>：用于描述每个行组的元数据信息。</li>
+<li><strong>data stream</strong>：存储数据的地方。</li>
+</ul>
+<p>ORC 在每个文件中提供了 3 个级别的索引：</p>
+<ul>
+<li><strong>文件级</strong>：这一级的索引信息记录文件中所有 stripe 的位置信息，以及文件中所存储的每列数据的统计信息。</li>
+<li><strong>条带级别</strong>：该级别索引记录每个 stripe 所存储数据的统计信息。</li>
+<li><strong>行组级别</strong>：在 stripe 中，每 10000 行构成一个行组，该级别的索引信息就是记录这个行组中存储的数据的统计信</li>
+</ul>
+<h3 id="读取顺序"><a href="#读取顺序" class="headerlink" title="读取顺序"></a>读取顺序</h3><p>在读取ORC文件时，会先从最后一个字节读取PostScript长度，进而读取到PostScript，从里面解析到File Footer长度，进而读取FileFooter，从中解析到各个Stripe信息，再读各个Stripe，即<strong>从后往前读</strong>。</p>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>程序可以借助 ORC 提供的索引<strong>加快数据查找和读取效率</strong>。程序在查询 ORC 文件类型的表时，会先读取每一列的索引信息，将查找数据的条件和索引信息进行对比，找到满足查找条件的文件。</p>
+<p>接着根据文件中的索引信息，找到存储对应的查询条件数据 stripe，再借助 stripe 的索引信息读文件中满足查询条件的所有 stripe 块。</p>
+<p>之后再根据 stripe 中每个行组的索引信息和查询条件比对的结果，找到满足要求的行组。</p>
+<p>通过 ORC 这些索引，可以<strong>快速定位满足查询的数据块</strong>，规避大部分不满足查询条件的文件和数据块，相比于读取传统的数据文件，进行查找时需要遍历全部的数据，使用 ORC 可以避免磁盘和网络 I/O 的浪费，提升程序的查找效率，提升整个集群的工作负载。</p>
+<h3 id="Hive-配置信息"><a href="#Hive-配置信息" class="headerlink" title="Hive 配置信息"></a>Hive 配置信息</h3><p>表的属性配置项有如下几个：</p>
+<ul>
+<li><code>orc.compress</code>：<strong>表示 ORC 文件的压缩类型，可选的类型有 NONE、ZLIB 和 SNAPPY，默认值是 ZLIB</strong>。</li>
+<li><code>orc.compress.size</code>：表示压缩块（chunk）的大小，默认值是 262144（256KB）。</li>
+<li><code>orc.stripe.size</code>：写 stripe，可以使用的内存缓冲池大小，默认值是 67108864（64MB）。</li>
+<li><code>orc.row.index.stride</code>：行组级别索引的数据量大小，默认是 10000，必须要设置成大于等于 10000 的数。</li>
+<li><code>orc.create.index</code>：是否创建行组级别索引，默认是 true。</li>
+<li><code>orc.bloom.filter.columns</code>：需要创建布隆过滤的组。</li>
+<li><code>orc.bloom.filter.fpp</code>：使用布隆过滤器的假正（False Positive）概率，默认值是 0.05。</li>
+</ul>
+<h2 id="Parquet"><a href="#Parquet" class="headerlink" title="Parquet"></a>Parquet</h2><p>在一个 Parquet 类型的 Hive 表文件中，<strong>数据被分成多个行组，每个列块又被拆分成若干的页（Page）</strong>，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240313161802.png" alt="image.png"></p>
+<p>上图展示了一个Parquet文件的基本结构，文件的首尾都是该文件的Magic Code，用于校验它是否是一个Parquet文件。</p>
+<p>首尾中间由<strong>若干个 Row Group</strong> 和一个 Footer（File Meta Data）组成。</p>
+<p>每个Row Group包含<strong>多个Column Chunk，每个Column Chunk包含多个Page</strong>。以下是Row Group、Column Chunk和Page三个概念的说明：<br><strong>行组（Row Group）</strong>：一个行组对应逻辑表中的若干行。<br><strong>列块（Column Chunk）</strong>：一个行组中的一列保存在一个列块中。<br><strong>页（Page）</strong>：一个列块的数据会划分为若干个页。<br>Footer（File Meta Data）：存储了每个行组（Row Group）中的每个列快（Column Chunk）的元数据信息，元数据信息包含了该列的数据类型、该列的编码方式、该类的 Data Page 位置等信息。</p>
+<p>Parquet 在存储数据时，也同 ORC 一样记录这些数据的元数据，这些元数据也同 Parquet 的文件结构一样，被分成多层文件级别的元数据、列块级别的元数据及页级别的元数据。</p>
+<p>文件级别的元数据（fileMetadata）记录主要如下：</p>
+<ul>
+<li>表结构信息（Schema）；</li>
+<li>该文件的记录数；</li>
+<li>该文件拥有的行组，以及每个行组的数据总量，记录数；</li>
+<li>每个行组下，列块的文件偏移量。</li>
+</ul>
+<p>列块的元数据信息如下：</p>
+<ul>
+<li>记录该列块的未压缩和压缩后的数据大小和压缩编码；</li>
+<li>数据页的偏移量；</li>
+<li>索引页的偏移量；</li>
+<li>列块的数据记录数。</li>
+</ul>
+<p>页头的元数据信息如下：</p>
+<ul>
+<li>该页的编码信息；</li>
+<li>该页的数据记录数。</li>
+</ul>
+<h1 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h1><h3 id="单个-MR-的中间结果进行压缩"><a href="#单个-MR-的中间结果进行压缩" class="headerlink" title="单个 MR 的中间结果进行压缩"></a>单个 MR 的中间结果进行压缩</h3><p>单个MR的中间结果是指Mapper输出的数据，对其进行压缩可降低shuffle阶段的网络IO，可通过以下参数进行配置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--开启MapReduce中间数据压缩功能</span><br><span class="line">set mapreduce.map.output.compress=true;</span><br><span class="line">--设置MapReduce中间数据数据的压缩方式（以下示例为snappy）</span><br><span class="line">set mapreduce.map.output.compress.codec=org.apache.hadoop.io.compress.SnappyCodec;</span><br></pre></td></tr></table></figure>
+<h3 id="单条-SQL-语句的中间结果进行压缩"><a href="#单条-SQL-语句的中间结果进行压缩" class="headerlink" title="单条 SQL 语句的中间结果进行压缩"></a>单条 SQL 语句的中间结果进行压缩</h3><p>单条SQL语句的中间结果是指，两个MR（一条SQL语句可能需要通过MR进行计算）之间的临时数据，可通过以下参数进行配置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--是否对两个MR之间的临时数据进行压缩</span><br><span class="line">set hive.exec.compress.intermediate=true;</span><br><span class="line">--压缩格式（以下示例为snappy）</span><br><span class="line">set hive.intermediate.compression.codec= org.apache.hadoop.io.compress.SnappyCodec;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">CHLi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8E%8B%E7%BC%A9/">http://example.com/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8E%8B%E7%BC%A9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Mr.Li's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hive/">Hive</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.JPG" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/03/14/Hadoop-%E5%B8%B8%E8%A7%81%E7%AB%AF%E5%8F%A3/" title="Hadoop-常用接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hadoop-常用接口</div></div></a></div><div class="next-post pull-right"><a href="/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E5%88%86%E5%8C%BA%E5%92%8C%E5%88%86%E6%A1%B6/" title="Hive-分区和分桶"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hive-分区和分桶</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/03/21/Hive-%E5%9F%BA%E7%A1%80-sql%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" title="Hive-sql执行顺序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-21</div><div class="title">Hive-sql执行顺序</div></div></a></div><div><a href="/2024/03/25/Hive-%E5%9F%BA%E7%A1%80-%E5%87%BD%E6%95%B0/" title="Hive-函数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-25</div><div class="title">Hive-函数</div></div></a></div><div><a href="/2024/03/21/Hive-%E5%9F%BA%E7%A1%80-%E5%BA%95%E5%B1%82%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/" title="Hive-sql执行顺序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-21</div><div class="title">Hive-sql执行顺序</div></div></a></div><div><a href="/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E5%88%86%E5%8C%BA%E5%92%8C%E5%88%86%E6%A1%B6/" title="Hive-分区和分桶"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-13</div><div class="title">Hive-分区和分桶</div></div></a></div><div><a href="/2024/03/08/Hive-%E5%9F%BA%E7%A1%80-%E8%BF%9E%E6%8E%A5%EF%BC%88join%EF%BC%8Cunion%EF%BC%89/" title="Hive-连接（join，union）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-08</div><div class="title">Hive-连接（join，union）</div></div></a></div><div><a href="/2024/03/25/Hive-%E5%9F%BA%E7%A1%80-%E8%B0%83%E4%BC%98/" title="Hive-调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-25</div><div class="title">Hive-调优</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.</span> <span class="toc-text">文件格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%8C%E5%AD%98%E5%82%A8%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.0.1.</span> <span class="toc-text">行存储的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%97%E5%AD%98%E5%82%A8%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.0.2.</span> <span class="toc-text">列存储的特点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ORC"><span class="toc-number">1.1.</span> <span class="toc-text">ORC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.1.</span> <span class="toc-text">基本结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E9%A1%BA%E5%BA%8F"><span class="toc-number">1.1.2.</span> <span class="toc-text">读取顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">1.1.3.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="toc-number">1.1.4.</span> <span class="toc-text">Hive 配置信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Parquet"><span class="toc-number">1.2.</span> <span class="toc-text">Parquet</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9"><span class="toc-number">2.</span> <span class="toc-text">压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA-MR-%E7%9A%84%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C%E8%BF%9B%E8%A1%8C%E5%8E%8B%E7%BC%A9"><span class="toc-number">2.0.1.</span> <span class="toc-text">单个 MR 的中间结果进行压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%9D%A1-SQL-%E8%AF%AD%E5%8F%A5%E7%9A%84%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C%E8%BF%9B%E8%A1%8C%E5%8E%8B%E7%BC%A9"><span class="toc-number">2.0.2.</span> <span class="toc-text">单条 SQL 语句的中间结果进行压缩</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

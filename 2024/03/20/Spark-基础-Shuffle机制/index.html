@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spark-基础-Shuffle机制 | Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="更详细版本看 Spark-Shuffle 概述Shuffle 翻译成中文是洗牌的意思。在 Spark 中，Shuffle 也确实担当了“洗牌”的角色，它会对 ShuffleMapStage 中 RDD 的数据进行重分区，以实现不同分区间的数据分组。这是分布式计算中不可或缺的一项特性。 为了更直观地解释 Shuffle 的概念，我们以 WordCount 为例展示 Shuffle 运作的过程：  在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark-基础-Shuffle机制">
+<meta property="og:url" content="http://example.com/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="更详细版本看 Spark-Shuffle 概述Shuffle 翻译成中文是洗牌的意思。在 Spark 中，Shuffle 也确实担当了“洗牌”的角色，它会对 ShuffleMapStage 中 RDD 的数据进行重分区，以实现不同分区间的数据分组。这是分布式计算中不可或缺的一项特性。 为了更直观地解释 Shuffle 的概念，我们以 WordCount 为例展示 Shuffle 运作的过程：  在">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:published_time" content="2024-03-20T08:46:31.343Z">
+<meta property="article:modified_time" content="2024-06-29T10:10:01.687Z">
+<meta property="article:author" content="CHLi">
+<meta property="article:tag" content="Spark">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spark-基础-Shuffle机制',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-29 18:10:01'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spark-基础-Shuffle机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-20T08:46:31.343Z" title="发表于 2024-03-20 16:46:31">2024-03-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-29T10:10:01.687Z" title="更新于 2024-06-29 18:10:01">2024-06-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Spark/">Spark</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spark-基础-Shuffle机制"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>更详细版本看 <a target="_blank" rel="noopener" href="https://magicpenta.github.io/docs/spark/Spark%20Shuffle#sortshufflewriter">Spark-Shuffle</a></p>
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>Shuffle 翻译成中文是洗牌的意思。在 Spark 中，Shuffle 也确实担当了“洗牌”的角色，<strong>它会对 ShuffleMapStage 中 RDD 的数据进行重分区，以实现不同分区间的数据分组。</strong>这是分布式计算中不可或缺的一项特性。</p>
+<p>为了更直观地解释 Shuffle 的概念，我们以 WordCount 为例展示 Shuffle 运作的过程：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240320163456.png" alt="image.png"></p>
+<p>在这个例子中，我们发现，借助 Shuffle，不同分区中属于同一个 key 的数据得以聚合到同一个下游分区中。如图中的 <code>panda</code>，它原本分散在 2 个 RDD 分区，经 Shuffle 后重组到了同一个分区中。不过，显而易见的是，为了实现这个过程，Shuffle需要在不同 Executor 甚至是不同主机间复制数据，这导致 Shuffle 成为一种复杂且成本高昂的操作。</p>
+<h2 id="发展历程"><a href="#发展历程" class="headerlink" title="发展历程"></a>发展历程</h2><p>自 Spark 面世以来，它的 Shuffle 模块历经了多次迭代 ：</p>
+<ul>
+<li>Spark 0.8 及以前使用 Hash Based Shuffle</li>
+<li>Spark 0.8.1 为 Hash Based Shuffle 引入 File Consolidation 机制</li>
+<li>Spark 0.9 引入 ExternalAppendOnlyMap</li>
+<li>Spark 1.1 引入 Sort Based Shuffle，但默认仍为 Hash Based Shuffle</li>
+<li>Spark 1.2 默认的 Shuffle 方式改为 Sort Based Shuffle</li>
+<li>Spark 1.4 引入 Tungsten-Sort Based Shuffle</li>
+<li>Spark 1.6 Tungsten-sort 并入 Sort Based Shuffle</li>
+<li>Spark 2.0 Hash Based Shuffle 退出历史舞台</li>
+</ul>
+<p>总之，到了 Spark 3.x 版本，在 Spark Core 已经看不到 Hash Based Shuffle 的相关源码了。本着旧事物不再重提的态度，本文不再讨论 Hash Based Shuffle，而是聚焦于 Sort Based Shuffle。</p>
+<p>当然，值得一提的是，Hash Based Shuffle 之所以被弃用，主要原因是 <strong>其在 shuffle 过程中容易生成大量文件，导致读写性能降低，进而影响到 shuffle 的效率</strong>。而在 Sort Based Shuffle 中，这个问题得到了有效的解决，具体的解决方式，且看下文分解。</p>
+<h1 id="Shuffle-类型"><a href="#Shuffle-类型" class="headerlink" title="Shuffle 类型"></a>Shuffle 类型</h1><h2 id="hash-based-shuffle-V-1"><a href="#hash-based-shuffle-V-1" class="headerlink" title="hash-based shuffle V 1"></a>hash-based shuffle V 1</h2><p>在Spark 0.8 及之前的版本采用：hash-based shuffle机制。</p>
+<p>也就是未经优化的版本。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240320163717.png" alt="image.png"></p>
+<h2 id="Hash-Shuffle-V2"><a href="#Hash-Shuffle-V2" class="headerlink" title="Hash Shuffle V2"></a>Hash Shuffle V2</h2><p>优化后的 Hash Shuffle，就是加入了 file consolidation，使得产生的文件数量减少。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240320163831.png" alt="image.png"></p>
+<h2 id="Hash-Shuffle-V3"><a href="#Hash-Shuffle-V3" class="headerlink" title="Hash Shuffle V3"></a>Hash Shuffle V3</h2><p>在 Spark 0.9 引入了 ExternalAppendOnlyMap。</p>
+<p>在combine的时候，可以将数据spill到磁盘，然后通过堆排序merge。</p>
+<h2 id="Sort-Shuffle"><a href="#Sort-Shuffle" class="headerlink" title="Sort Shuffle"></a>Sort Shuffle</h2><h3 id="普通版"><a href="#普通版" class="headerlink" title="普通版"></a>普通版</h3><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240320164049.png" alt="image.png"></p>
+<h3 id="bypass-运行机制"><a href="#bypass-运行机制" class="headerlink" title="bypass 运行机制"></a>bypass 运行机制</h3><p><strong>Reducer 端任务数比较少的情况下，基于 Hash Shuffle 实现机制明显比基于 Sort Shuffle 实现机制要快，因此基于 Sort Shuffle 实现机制提供了一个带 Hash 风格的回退方案，就是 bypass 运行机制</strong>。对于 Reducer 端任务数少于配置属性<code>spark.shuffle.sort.bypassMergeThreshold</code>设置的个数时，使用带 Hash 风格的回退计划。</p>
+<p>bypass 运行机制的触发条件如下：</p>
+<ul>
+<li>shuffle map task 数量小于<code>spark.shuffle.sort.bypassMergeThreshold=200</code>参数的值。</li>
+<li>不是聚合类的 shuffle 算子。</li>
+</ul>
+<p>该过程的磁盘写机制其实跟未经优化的 HashShuffleManager 是一模一样的，因为都要创建数量惊人的磁盘文件，只是在最后会做一个磁盘文件的合并而已。因此少量的最终磁盘文件，也让该机制相对未经优化的 HashShuffleManager 来说，shuffle read 的性能会更好。</p>
+<p>而该机制与普通 SortShuffleManager 运行机制的不同在于：第一，磁盘写机制不同；第二，不会进行排序。也就是说，<strong>启用该机制的最大好处在于，shuffle write 过程中，不需要进行数据的排序操作</strong>，也就节省掉了这部分的性能开销。</p>
+<p>bypass 运行机制的 SortShuffleManager 工作原理如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240320164318.png" alt="image.png"></p>
+<h3 id="Tungsten-Sort-Shuffle-运行机制"><a href="#Tungsten-Sort-Shuffle-运行机制" class="headerlink" title="Tungsten Sort Shuffle 运行机制"></a>Tungsten Sort Shuffle 运行机制</h3><p>Tungsten Sort 是对普通 Sort 的一种优化，Tungsten Sort 会进行排序，但排序的不是内容本身，而是内容序列化后字节数组的指针(元数据)，<strong>把数据的排序转变为了指针数组的排序</strong>，实现了直接对序列化后的二进制数据进行排序。由于直接基于二进制数据进行操作，所以在这里面<strong>没有序列化和反序列化的过程</strong>。内存的消耗大大降低，相应的，会极大的减少的 GC 的开销。</p>
+<p>Spark 提供了配置属性，用于选择具体的 Shuffle 实现机制，但需要说明的是，虽然默认情况下 Spark 默认开启的是基于 SortShuffle 实现机制，但实际上，参考 Shuffle 的框架内核部分可知基于 SortShuffle 的实现机制与基于 Tungsten Sort Shuffle 实现机制都是使用 SortShuffleManager，而内部使用的具体的实现机制，是通过提供的两个方法进行判断的：</p>
+<p><strong>对应非基于 Tungsten Sort 时，通过 <code>SortShuffleWriter.shouldBypassMergeSort</code> 方法判断是否需要回退到 Hash 风格的 Shuffle 实现机制，当该方法返回的条件不满足时，则通过 <code>SortShuffleManager.canUseSerializedShuffle</code> 方法判断是否需要采用基于 Tungsten Sort Shuffle 实现机制，而当这两个方法返回都为 false，即都不满足对应的条件时，会自动采用普通运行机制。</strong></p>
+<p>因此，当设置了 <code>spark.shuffle.manager=tungsten-sort</code> 时，也不能保证就一定采用基于 Tungsten Sort 的 Shuffle 实现机制。</p>
+<p>要实现 Tungsten Sort Shuffle 机制需要满足以下条件：</p>
+<ol>
+<li>Shuffle 依赖中不带聚合操作或没有对输出进行排序的要求。</li>
+<li>Shuffle 的序列化器支持序列化值的重定位（当前仅支持 KryoSerializer Spark SQL 框架自定义的序列化器）。</li>
+<li>Shuffle 过程中的输出分区个数少于 16777216 个。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">CHLi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/">http://example.com/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Mr.Li's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.JPG" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/03/21/Hive-%E5%9F%BA%E7%A1%80-sql%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" title="Hive-sql执行顺序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hive-sql执行顺序</div></div></a></div><div class="next-post pull-right"><a href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B/" title="Spark-基础-核心编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spark-基础-核心编程</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-Cache%E4%B8%8Echeckpoint/" title="Spark-基础-Cache 与 Checkpoint"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-Cache 与 Checkpoint</div></div></a></div><div><a href="/2024/03/21/Spark-%E5%9F%BA%E7%A1%80-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%9C%BA%E5%88%B6/" title="Spark-基础-任务调度机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-21</div><div class="title">Spark-基础-任务调度机制</div></div></a></div><div><a href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B/" title="Spark-基础-核心编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-20</div><div class="title">Spark-基础-核心编程</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%BC%8F/" title="Spark-基础-运行模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-运行模式</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E7%B4%AF%E5%8A%A0%E5%99%A8%E4%B8%8E%E5%B9%BF%E6%92%AD%E5%8F%98%E9%87%8F/" title="Spark-基础-累加器和Broadcast"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-累加器和Broadcast</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E9%80%9A%E8%AE%AF%E6%9C%BA%E5%88%B6/" title="Spark-基础-通信机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-通信机制</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%91%E5%B1%95%E5%8E%86%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">发展历程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Shuffle-%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">Shuffle 类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#hash-based-shuffle-V-1"><span class="toc-number">2.1.</span> <span class="toc-text">hash-based shuffle V 1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hash-Shuffle-V2"><span class="toc-number">2.2.</span> <span class="toc-text">Hash Shuffle V2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hash-Shuffle-V3"><span class="toc-number">2.3.</span> <span class="toc-text">Hash Shuffle V3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sort-Shuffle"><span class="toc-number">2.4.</span> <span class="toc-text">Sort Shuffle</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E7%89%88"><span class="toc-number">2.4.1.</span> <span class="toc-text">普通版</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bypass-%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6"><span class="toc-number">2.4.2.</span> <span class="toc-text">bypass 运行机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tungsten-Sort-Shuffle-%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6"><span class="toc-number">2.4.3.</span> <span class="toc-text">Tungsten Sort Shuffle 运行机制</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

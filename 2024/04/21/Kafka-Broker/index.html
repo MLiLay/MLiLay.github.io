@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Kafka-Broker | Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="zookeeper 与Broker 总体工作流程 工作流程Controller 与 Leader 的产生 Broker 在 zookeeper 中进行注册。 先注册的 Broker 就是 Controller 中的“Leader（话事人）”。 选举出来的 Controller （话事人）负责监听 Broker ，确保 Leader 是否存活（Follower 需要 Leader 请求或同步数据，如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka-Broker">
+<meta property="og:url" content="http://example.com/2024/04/21/Kafka-Broker/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="zookeeper 与Broker 总体工作流程 工作流程Controller 与 Leader 的产生 Broker 在 zookeeper 中进行注册。 先注册的 Broker 就是 Controller 中的“Leader（话事人）”。 选举出来的 Controller （话事人）负责监听 Broker ，确保 Leader 是否存活（Follower 需要 Leader 请求或同步数据，如">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:published_time" content="2024-04-21T06:25:00.455Z">
+<meta property="article:modified_time" content="2024-06-29T09:39:53.658Z">
+<meta property="article:author" content="CHLi">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/2024/04/21/Kafka-Broker/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Kafka-Broker',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-29 17:39:53'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Kafka-Broker</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-04-21T06:25:00.455Z" title="发表于 2024-04-21 14:25:00">2024-04-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-29T09:39:53.658Z" title="更新于 2024-06-29 17:39:53">2024-06-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Kafka/">Kafka</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Kafka-Broker"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="zookeeper-与Broker"><a href="#zookeeper-与Broker" class="headerlink" title="zookeeper 与Broker"></a>zookeeper 与Broker</h1><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240325165624.png" alt="image.png"></p>
+<h1 id="总体工作流程"><a href="#总体工作流程" class="headerlink" title="总体工作流程"></a>总体工作流程</h1><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240325165646.png" alt="image.png"></p>
+<h2 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h2><h3 id="Controller-与-Leader-的产生"><a href="#Controller-与-Leader-的产生" class="headerlink" title="Controller 与 Leader 的产生"></a>Controller 与 Leader 的产生</h3><ol>
+<li>Broker 在 zookeeper 中进行注册。</li>
+<li>先注册的 Broker 就是 Controller 中的“Leader（话事人）”。</li>
+<li>选举出来的 Controller （话事人）负责监听 Broker ，确保 Leader 是否存活（Follower 需要 Leader 请求或同步数据，如果超过 30 s 没有就代表节点死了，会被剔除 ISR）。</li>
+<li>Controller（话事人） 负责 Broker 中 Leader 的选举。</li>
+<li>Controller （话事人）知道节点的存活信息后，将 Leader 信息和所有存活的 Broker 信息上传到 zookeeper 中，此时会产生 isr（AR 代表所有节点，ISR 代表存活着的 ISR）。</li>
+<li>其他的 Controller 从 zookeeper 中获取相应的 ISR 信息</li>
+</ol>
+<h3 id="Leader-更新策略"><a href="#Leader-更新策略" class="headerlink" title="Leader 更新策略"></a>Leader 更新策略</h3><ol>
+<li>如果 Broker 中的 Leader 挂了</li>
+<li>Controller（话事人）监听到 Leader 挂了</li>
+<li>Controller（话事人）从 zookeeper 中获取 ISR 信息</li>
+<li>选举新的 Leader（<strong>在 ISR 中存活的排列顺序进行 Leader 的选举，即 Controller 会按照排列顺序进行询问，如果第一个应答了，那么第一个 Broker 就会成为 Leader，反之，则询问下一个。</strong>）</li>
+<li>更新 Leader 及 ISR。</li>
+</ol>
+<h1 id="Broker-重要参数"><a href="#Broker-重要参数" class="headerlink" title="Broker 重要参数"></a>Broker 重要参数</h1><h3 id="replica-lag-time-max-ms"><a href="#replica-lag-time-max-ms" class="headerlink" title="replica.lag.time.max.ms"></a>replica.lag.time.max.ms</h3><p>主要被用于监控 Broker 是否存活。</p>
+<p>ISR中，如果Follower长时间未向Leader发送通 信请求或同步数据，则该Follower将被踢出ISR。 该时间阈值，<strong>默认30s</strong>。</p>
+<h3 id="auto-leader-rebalance-enable"><a href="#auto-leader-rebalance-enable" class="headerlink" title="auto.leader.rebalance.enable"></a>auto.leader.rebalance.enable</h3><p>默认是 true。自动 Leader Partition 平衡。主要是在有新节点重新加入之后，重新分配副本的情况。</p>
+<h3 id="leader-imbalance-check-interval-seconds"><a href="#leader-imbalance-check-interval-seconds" class="headerlink" title="leader.imbalance.check.interval.seconds"></a>leader.imbalance.check.interval.seconds</h3><p>默认值300秒。检查leader负载是否平衡的间隔时间。</p>
+<h3 id="log-segment-bytes"><a href="#log-segment-bytes" class="headerlink" title="log.segment.bytes"></a>log.segment.bytes</h3><p>Kafka中log日志是分成一块块存储的，此配置是 指log日志划分成块的大小，默认值1G。</p>
+<h3 id="log-index-interval-bytes"><a href="#log-index-interval-bytes" class="headerlink" title="log.index.interval.bytes"></a>log.index.interval.bytes</h3><p>默认4kb，kafka里面每当写入了4kb大小的日志 （.log），然后就往index文件里面记录一个索引。</p>
+<h3 id="log-retention-hours"><a href="#log-retention-hours" class="headerlink" title="log.retention.hours"></a>log.retention.hours</h3><p>Kafka中数据保存的时间，默认7天。</p>
+<h3 id="log-retention-minutes"><a href="#log-retention-minutes" class="headerlink" title="log.retention.minutes"></a>log.retention.minutes</h3><p>Kafka中数据保存的时间，分钟级别，默认关闭。</p>
+<h3 id="log-retention-ms"><a href="#log-retention-ms" class="headerlink" title="log.retention.ms"></a>log.retention.ms</h3><p>Kafka中数据保存的时间，毫秒级别，默认关闭。</p>
+<h3 id="log-retention-check-interval-ms"><a href="#log-retention-check-interval-ms" class="headerlink" title="log.retention.check.interval.ms"></a>log.retention.check.interval.ms</h3><p>检查数据是否保存超时的间隔，默认是5分钟。</p>
+<h3 id="log-retention-bytes"><a href="#log-retention-bytes" class="headerlink" title="log.retention.bytes"></a>log.retention.bytes</h3><p>默认等于-1，表示无穷大。超过设置的所有日志总 大小，删除最早的segment。</p>
+<h3 id="log-cleanup-policy"><a href="#log-cleanup-policy" class="headerlink" title="log.cleanup.policy"></a>log.cleanup.policy</h3><p>默认是delete，表示所有数据启用删除策略； 如果设置值为compact，表示所有数据启用压缩策 略。</p>
+<h3 id="num-io-threads"><a href="#num-io-threads" class="headerlink" title="num.io.threads"></a>num.io.threads</h3><p>默认是8。负责写磁盘的线程数。整个参数值要占 总核数的50%。</p>
+<h3 id="num-replica-fetchers"><a href="#num-replica-fetchers" class="headerlink" title="num.replica.fetchers"></a>num.replica.fetchers</h3><p>副本拉取线程数，这个参数占总核数的50%的1/3</p>
+<h3 id="num-network-threads"><a href="#num-network-threads" class="headerlink" title="num.network.threads"></a>num.network.threads</h3><p>默认是3。数据传输线程数，这个参数占总核数的 50%的2/3 。</p>
+<h3 id="log-flush-interval-messages"><a href="#log-flush-interval-messages" class="headerlink" title="log.flush.interval.messages"></a>log.flush.interval.messages</h3><p>强制页缓存刷写到磁盘的条数，默认是long的最 大值，9223372036854775807。一般不建议修改， 交给系统自己管理。</p>
+<h3 id="log-flush-interval-ms"><a href="#log-flush-interval-ms" class="headerlink" title="log.flush.interval.ms"></a>log.flush.interval.ms</h3><p>每隔多久，刷数据到磁盘，默认是null。一般不建 议修改，交给系统自己管理。</p>
+<h1 id="Kafka-副本信息"><a href="#Kafka-副本信息" class="headerlink" title="Kafka 副本信息"></a>Kafka 副本信息</h1><h3 id="副本作用"><a href="#副本作用" class="headerlink" title="副本作用"></a>副本作用</h3><p>提高数据可靠性</p>
+<h3 id="副本个数"><a href="#副本个数" class="headerlink" title="副本个数"></a>副本个数</h3><p>Kafka 默认副本 1个，生产环境一般配置为 2个，保证数据可靠性；太多副本会 增加磁盘存储空间，增加网络上数据传输，降低效率。</p>
+<p>Kafka 中副本分为：Leader 和 Follower。Kafka 生产者只会把数据发往 Leader， 然后Follower找Leader进行同步数据。</p>
+<h3 id="简称"><a href="#简称" class="headerlink" title="简称"></a>简称</h3><p>Kafka分区中的所有副本统称为AR（Assigned Repllicas）。</p>
+<p><strong>AR = ISR + OSR</strong></p>
+<p>ISR，表示和Leader保持同步的 Follower集合。如果 Follower长时间未向 Leader发送通信请求或同步数据，则该Follower将被踢出 ISR。该时间阈值由 replica.lag.time.max.ms 参数设定，默认30s。Leader发生故障之后，就会从ISR中选举新的Leader。</p>
+<p>OSR，表示Follower与Leader副本同步时，延迟过多的副本。</p>
+<h1 id="Leader-和-Follower-故障数据统一处理"><a href="#Leader-和-Follower-故障数据统一处理" class="headerlink" title="Leader 和 Follower 故障数据统一处理"></a>Leader 和 Follower 故障数据统一处理</h1><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>LEO（Log End Offset）：每个副本的最后一个 offset，LEo 其实就是最新的 offset+1</p>
+<p>HW（High Watermark）：所有副本中最小的 LEO</p>
+<h2 id="Follower-故障"><a href="#Follower-故障" class="headerlink" title="Follower 故障"></a>Follower 故障</h2><p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412134028.png" alt="image.png"></p>
+<ol>
+<li>Follower 发生故障后会被剔除 ISR</li>
+<li>这个期间 Leader 和 Follower 继续接受数据</li>
+<li>待该 Follower 恢复后，Follower 会读取本地磁盘记录的上次 HW，并将 log 问价高于 HW 部分丢弃，从 HW 开始向 Leader 位置同步数据。</li>
+<li>等 Follower 的 LED 大于等于该 Partition 的 HW，即 Follower 追上 Leader 后，就可以加入 ISR</li>
+</ol>
+<h2 id="Leader-故障"><a href="#Leader-故障" class="headerlink" title="Leader 故障"></a>Leader 故障</h2><p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412134325.png" alt="image.png"></p>
+<ol>
+<li>Leader 发生故障后，会从 ISR 中选出一个新的 Leader，即<strong>从 ISR 中的 Follower 中 LEO 最小的成为 Leader</strong>。</li>
+<li>为保证多个副本之间的数据一致性，其余的 Follower 会先将各自的 log 文件高于 HW 的部分丢弃，然后从新的 Leader 同步数据。</li>
+</ol>
+<h1 id="手动调整分区副本存放"><a href="#手动调整分区副本存放" class="headerlink" title="手动调整分区副本存放"></a>手动调整分区副本存放</h1><ol>
+<li>创建一个 json 文件，文件中写明 version，partition，replicas 等字段。</li>
+<li>执行副本存储计划</li>
+<li>验证副本存储计划<br>例：</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 1.json 文件内容</span><br><span class="line">&#123; </span><br><span class="line">	&quot;version&quot;:1, </span><br><span class="line">	&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;, </span><br><span class="line">				&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;, </span><br><span class="line">				&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;, </span><br><span class="line">				&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;] </span><br><span class="line">&#125;</span><br><span class="line">// 2. 执行计划</span><br><span class="line">bin/kafka-reassign-partitions.sh - bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --execute</span><br><span class="line"></span><br><span class="line">// 3. 验证计划</span><br><span class="line">bin/kafka-reassign-partitions.sh - bootstrap-server hadoop102:9092 --reassignment-json-file increase-replication-factor.json --verify</span><br></pre></td></tr></table></figure>
+<h1 id="Leader-Partion-负载均衡"><a href="#Leader-Partion-负载均衡" class="headerlink" title="Leader Partion 负载均衡"></a>Leader Partion 负载均衡</h1><p>正常情况下，Kafka 本身会自动把 Leader Partition 均匀分散在各个机器上，来保证每台机器的读写吞吐量都是均匀的。但是如果某些broker宕机，<strong>会导致Leader Partition过于集中在其他少部分几台broker上</strong>，这会导致少数几台broker的读写请求压力过高，其他宕机的broker重启之后都是follower partition，读写请求很低，造成集群负载不均衡。</p>
+<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><h3 id="auto-leader-rebalance-enable-1"><a href="#auto-leader-rebalance-enable-1" class="headerlink" title="auto.leader.rebalance.enable"></a>auto.leader.rebalance.enable</h3><p>默认是true。 自动Leader Partition 平衡。生产环 境中，leader 重选举的代价比较大，可能会带来 性能影响，建议设置为false关闭。</p>
+<h3 id="leader-imbalance-per-broker-percentage"><a href="#leader-imbalance-per-broker-percentage" class="headerlink" title="leader.imbalance.per.broker.percentage"></a>leader.imbalance.per.broker.percentage</h3><p>默认是10%。每个 broker允许的不平衡的 leader 的比率。如果每个 broker 超过了这个值，控制器 会触发leader的平衡。</p>
+<h3 id="leader-imbalance-check-interval-seconds-1"><a href="#leader-imbalance-check-interval-seconds-1" class="headerlink" title="leader.imbalance.check.interval.seconds"></a>leader.imbalance.check.interval.seconds</h3><p>默认值 300 秒。检查 leader 负载是否平衡的间隔 时间。</p>
+<h1 id="增加副本"><a href="#增加副本" class="headerlink" title="增加副本"></a>增加副本</h1><p>副本数的修改是无法通过命令进行实现的，只能通过写 json 文件重新分配分区的方式实现。</p>
+<h1 id="文件存储机制"><a href="#文件存储机制" class="headerlink" title="文件存储机制"></a>文件存储机制</h1><p>Topic是逻辑上的概念，而partition是物理上的概念，<strong>每个partition对应于一个log文件</strong>，该log文件中存储的就是Producer生产的数 据。Producer生产的数据会被不断追加到该log文件末端，为防止log文件过大导致数据定位效率低下，<strong>Kafka采取了分片和索引机制， 将每个partition分为多个segment</strong>。每个segment包括：“.index”文件、“.log”文件和.timeindex等文件。这些文件位于一个文件夹下，该 文件夹的命名规则为：topic名称+分区序号，例如：first-0。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412141512.png" alt="image.png"></p>
+<p>.log 日志文件</p>
+<p>.index 偏移量索引文件</p>
+<p>.timeindex 时间戳文件（主要用来标记整个文件的最后修改时间，用于删除文件）</p>
+<p><strong>注</strong>：index 和 log 文件以当前 segment 的第一条消息的 offset 命名。</p>
+<h3 id="数据定位"><a href="#数据定位" class="headerlink" title="数据定位"></a>数据定位</h3><p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412141712.png" alt="image.png"></p>
+<ol>
+<li>根据需要查询的数据的 offset 查找到对应的 segment</li>
+<li>找到第一个小于需要查询文件的 offset 的绝对 offset，定位到相应的索引项</li>
+<li>定位到 log 文件</li>
+<li><p>向下遍历找到目标 record<br><strong>注</strong>：</p>
+</li>
+<li><p>.index 为稀疏索引，大约每往 log 文件写入 4 kb 数据，会往 index 文件写入一条索引。通过参数 log. index. interval. bytes 进行设置，默认是 4 kb。</p>
+</li>
+<li>Index 文件中保存的 offset 为相对 offset，这样能确保 offset 的值所占空间不会过大， 因此能将 offset 的值控制在固定大小<h3 id="参数设置"><a href="#参数设置" class="headerlink" title="参数设置"></a>参数设置</h3></li>
+</ol>
+<h4 id="log-segment-bytes-1"><a href="#log-segment-bytes-1" class="headerlink" title="log.segment.bytes"></a>log.segment.bytes</h4><p>Kafka 中 log 日志是分成一块块存储的，此配置是指 log日志划分 成块的大小，默认值1G。</p>
+<h4 id="log-index-interval-bytes-1"><a href="#log-index-interval-bytes-1" class="headerlink" title="log.index.interval.bytes"></a>log.index.interval.bytes</h4><p>默认 4kb，kafka 里面每当写入了 4kb 大小的日志（.log），然后就 往index文件里面记录一个索引。 稀疏索引。</p>
+<h1 id="文件清理策略"><a href="#文件清理策略" class="headerlink" title="文件清理策略"></a>文件清理策略</h1><p>Kafka 中默认的日志保存时间为7天，可以通过调整如下参数修改保存时间。</p>
+<ul>
+<li>log. retention. hours，最低优先级小时，默认 7 天。</li>
+<li>log. retention. minutes，分钟。</li>
+<li>log. retention. ms，最高优先级毫秒。 </li>
+<li>log. retention. check. interval. ms，负责设置检查周期，默认 5 分钟。</li>
+</ul>
+<p>有两种数据清除策略</p>
+<ol>
+<li>delete 删除</li>
+<li>compact 压缩</li>
+</ol>
+<h2 id="delete-删除：将过期数据删除"><a href="#delete-删除：将过期数据删除" class="headerlink" title="delete 删除：将过期数据删除"></a>delete 删除：将过期数据删除</h2><p>log.cleanup.policy = delete 所有数据启用删除策略 </p>
+<ol>
+<li>基于时间：默认打开。以 segment 中所有记录中的最大时间戳作为该文件时间戳。 </li>
+<li>基于大小：默认关闭。超过设置的所有日志总大小，删除最早的 segment。 log. retention. bytes，默认等于-1，表示无穷大。</li>
+</ol>
+<p><strong>注</strong>：这里的时间是以 log 中最后一条数据的时间戳进行计算。</p>
+<h2 id="compact-日志压缩"><a href="#compact-日志压缩" class="headerlink" title="compact 日志压缩"></a>compact 日志压缩</h2><p>compact日志压缩：对于相同key的不同value值，只保留最后一个版本。</p>
+<p>log.cleanup.policy = compact 所有数据启用压缩策略。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412142638.png" alt="image.png"><br>压缩后的offset可能是不连续的，比如上图中没有6，当从这些offset消费消息时，将会拿到比这个offset大 的offset对应的消息，实际上会拿到offset为7的消息，并从这个位置开始消费。 这种策略只适合特殊场景，比如消息的key是用户ID，value是用户的资料，通过这种压缩策略，整个消息 集里就保存了所有用户最新的资料。</p>
+<h1 id="高效读写数据原理"><a href="#高效读写数据原理" class="headerlink" title="高效读写数据原理"></a>高效读写数据原理</h1><h2 id="Kafka本身是分布式集群，可以采用分区技术，并行度高"><a href="#Kafka本身是分布式集群，可以采用分区技术，并行度高" class="headerlink" title="Kafka本身是分布式集群，可以采用分区技术，并行度高"></a>Kafka本身是分布式集群，可以采用分区技术，并行度高</h2><h2 id="读数据采用稀疏索引，可以快速定位要消费的数据"><a href="#读数据采用稀疏索引，可以快速定位要消费的数据" class="headerlink" title="读数据采用稀疏索引，可以快速定位要消费的数据"></a>读数据采用稀疏索引，可以快速定位要消费的数据</h2><h2 id="顺序写磁盘"><a href="#顺序写磁盘" class="headerlink" title="顺序写磁盘"></a>顺序写磁盘</h2><p>Kafka 的 producer生产数据，要写入到 log文件中，写的过程是一直追加到文件末端， 为顺序写。官网有数据表明，同样的磁盘，顺序写能到600M/s，而随机写只有100K/s。这 与磁盘的机械机构有关，顺序写之所以快，是因为其省去了大量磁头寻址的时间。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412142757.png" alt="image.png"></p>
+<h2 id="页缓存-零拷贝"><a href="#页缓存-零拷贝" class="headerlink" title="页缓存+零拷贝"></a>页缓存+零拷贝</h2><p><img src="https://cdn.jsdelivr.net/gh/MLiLay/img/img20240412142833.png" alt="image.png"></p>
+<h3 id="参数-1"><a href="#参数-1" class="headerlink" title="参数"></a>参数</h3><h4 id="log-flush-interval-messages-1"><a href="#log-flush-interval-messages-1" class="headerlink" title="log.flush.interval.messages"></a>log.flush.interval.messages</h4><p>强制页缓存刷写到磁盘的条数，默认是long的最大值， 9223372036854775807。一般不建议修改，交给系统自己管 理。</p>
+<h4 id="log-flush-interval-ms-1"><a href="#log-flush-interval-ms-1" class="headerlink" title="log.flush.interval.ms"></a>log.flush.interval.ms</h4><p>每隔多久，刷数据到磁盘，默认是null。一般不建议修改， 交给系统自己管理。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">CHLi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/04/21/Kafka-Broker/">http://example.com/2024/04/21/Kafka-Broker/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Mr.Li's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Kafka/">Kafka</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.JPG" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-join%E4%BC%98%E5%8C%96/" title="Spark-面试题-join优化"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Spark-面试题-join优化</div></div></a></div><div class="next-post pull-right"><a href="/2024/04/16/MySQL-%E7%B1%BB%E5%9E%8B%E5%8C%BA%E5%88%AB/" title="MySQL-类型"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">MySQL-类型</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/04/12/Kafka-Consumer/" title="Kafka-Consumer"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-12</div><div class="title">Kafka-Consumer</div></div></a></div><div><a href="/2024/03/25/Kafka-Producer/" title="Kafka-Producer"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-25</div><div class="title">Kafka-Producer</div></div></a></div><div><a href="/2024/03/24/Kafka-%E4%B8%8E%E5%85%B6%E4%BB%96%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%8C%BA%E5%88%AB/" title="Kafka-与其他消息队列区别"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-24</div><div class="title">Kafka-与其他消息队列区别</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#zookeeper-%E4%B8%8EBroker"><span class="toc-number">1.</span> <span class="toc-text">zookeeper 与Broker</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">总体工作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">工作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Controller-%E4%B8%8E-Leader-%E7%9A%84%E4%BA%A7%E7%94%9F"><span class="toc-number">2.1.1.</span> <span class="toc-text">Controller 与 Leader 的产生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leader-%E6%9B%B4%E6%96%B0%E7%AD%96%E7%95%A5"><span class="toc-number">2.1.2.</span> <span class="toc-text">Leader 更新策略</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Broker-%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">Broker 重要参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#replica-lag-time-max-ms"><span class="toc-number">3.0.1.</span> <span class="toc-text">replica.lag.time.max.ms</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#auto-leader-rebalance-enable"><span class="toc-number">3.0.2.</span> <span class="toc-text">auto.leader.rebalance.enable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#leader-imbalance-check-interval-seconds"><span class="toc-number">3.0.3.</span> <span class="toc-text">leader.imbalance.check.interval.seconds</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-segment-bytes"><span class="toc-number">3.0.4.</span> <span class="toc-text">log.segment.bytes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-index-interval-bytes"><span class="toc-number">3.0.5.</span> <span class="toc-text">log.index.interval.bytes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-retention-hours"><span class="toc-number">3.0.6.</span> <span class="toc-text">log.retention.hours</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-retention-minutes"><span class="toc-number">3.0.7.</span> <span class="toc-text">log.retention.minutes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-retention-ms"><span class="toc-number">3.0.8.</span> <span class="toc-text">log.retention.ms</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-retention-check-interval-ms"><span class="toc-number">3.0.9.</span> <span class="toc-text">log.retention.check.interval.ms</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-retention-bytes"><span class="toc-number">3.0.10.</span> <span class="toc-text">log.retention.bytes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-cleanup-policy"><span class="toc-number">3.0.11.</span> <span class="toc-text">log.cleanup.policy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#num-io-threads"><span class="toc-number">3.0.12.</span> <span class="toc-text">num.io.threads</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#num-replica-fetchers"><span class="toc-number">3.0.13.</span> <span class="toc-text">num.replica.fetchers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#num-network-threads"><span class="toc-number">3.0.14.</span> <span class="toc-text">num.network.threads</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-flush-interval-messages"><span class="toc-number">3.0.15.</span> <span class="toc-text">log.flush.interval.messages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-flush-interval-ms"><span class="toc-number">3.0.16.</span> <span class="toc-text">log.flush.interval.ms</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Kafka-%E5%89%AF%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="toc-number">4.</span> <span class="toc-text">Kafka 副本信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E4%BD%9C%E7%94%A8"><span class="toc-number">4.0.1.</span> <span class="toc-text">副本作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E4%B8%AA%E6%95%B0"><span class="toc-number">4.0.2.</span> <span class="toc-text">副本个数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E7%A7%B0"><span class="toc-number">4.0.3.</span> <span class="toc-text">简称</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Leader-%E5%92%8C-Follower-%E6%95%85%E9%9A%9C%E6%95%B0%E6%8D%AE%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86"><span class="toc-number">5.</span> <span class="toc-text">Leader 和 Follower 故障数据统一处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5"><span class="toc-number">5.0.1.</span> <span class="toc-text">概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Follower-%E6%95%85%E9%9A%9C"><span class="toc-number">5.1.</span> <span class="toc-text">Follower 故障</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Leader-%E6%95%85%E9%9A%9C"><span class="toc-number">5.2.</span> <span class="toc-text">Leader 故障</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%8B%E5%8A%A8%E8%B0%83%E6%95%B4%E5%88%86%E5%8C%BA%E5%89%AF%E6%9C%AC%E5%AD%98%E6%94%BE"><span class="toc-number">6.</span> <span class="toc-text">手动调整分区副本存放</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Leader-Partion-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-number">7.</span> <span class="toc-text">Leader Partion 负载均衡</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0"><span class="toc-number">7.1.</span> <span class="toc-text">参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#auto-leader-rebalance-enable-1"><span class="toc-number">7.1.1.</span> <span class="toc-text">auto.leader.rebalance.enable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#leader-imbalance-per-broker-percentage"><span class="toc-number">7.1.2.</span> <span class="toc-text">leader.imbalance.per.broker.percentage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#leader-imbalance-check-interval-seconds-1"><span class="toc-number">7.1.3.</span> <span class="toc-text">leader.imbalance.check.interval.seconds</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A2%9E%E5%8A%A0%E5%89%AF%E6%9C%AC"><span class="toc-number">8.</span> <span class="toc-text">增加副本</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">9.</span> <span class="toc-text">文件存储机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D"><span class="toc-number">9.0.1.</span> <span class="toc-text">数据定位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="toc-number">9.0.2.</span> <span class="toc-text">参数设置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#log-segment-bytes-1"><span class="toc-number">9.0.2.1.</span> <span class="toc-text">log.segment.bytes</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#log-index-interval-bytes-1"><span class="toc-number">9.0.2.2.</span> <span class="toc-text">log.index.interval.bytes</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%B8%85%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-number">10.</span> <span class="toc-text">文件清理策略</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#delete-%E5%88%A0%E9%99%A4%EF%BC%9A%E5%B0%86%E8%BF%87%E6%9C%9F%E6%95%B0%E6%8D%AE%E5%88%A0%E9%99%A4"><span class="toc-number">10.1.</span> <span class="toc-text">delete 删除：将过期数据删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#compact-%E6%97%A5%E5%BF%97%E5%8E%8B%E7%BC%A9"><span class="toc-number">10.2.</span> <span class="toc-text">compact 日志压缩</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AB%98%E6%95%88%E8%AF%BB%E5%86%99%E6%95%B0%E6%8D%AE%E5%8E%9F%E7%90%86"><span class="toc-number">11.</span> <span class="toc-text">高效读写数据原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka%E6%9C%AC%E8%BA%AB%E6%98%AF%E5%88%86%E5%B8%83%E5%BC%8F%E9%9B%86%E7%BE%A4%EF%BC%8C%E5%8F%AF%E4%BB%A5%E9%87%87%E7%94%A8%E5%88%86%E5%8C%BA%E6%8A%80%E6%9C%AF%EF%BC%8C%E5%B9%B6%E8%A1%8C%E5%BA%A6%E9%AB%98"><span class="toc-number">11.1.</span> <span class="toc-text">Kafka本身是分布式集群，可以采用分区技术，并行度高</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E6%95%B0%E6%8D%AE%E9%87%87%E7%94%A8%E7%A8%80%E7%96%8F%E7%B4%A2%E5%BC%95%EF%BC%8C%E5%8F%AF%E4%BB%A5%E5%BF%AB%E9%80%9F%E5%AE%9A%E4%BD%8D%E8%A6%81%E6%B6%88%E8%B4%B9%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">11.2.</span> <span class="toc-text">读数据采用稀疏索引，可以快速定位要消费的数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E5%86%99%E7%A3%81%E7%9B%98"><span class="toc-number">11.3.</span> <span class="toc-text">顺序写磁盘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E7%BC%93%E5%AD%98-%E9%9B%B6%E6%8B%B7%E8%B4%9D"><span class="toc-number">11.4.</span> <span class="toc-text">页缓存+零拷贝</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0-1"><span class="toc-number">11.4.1.</span> <span class="toc-text">参数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#log-flush-interval-messages-1"><span class="toc-number">11.4.1.1.</span> <span class="toc-text">log.flush.interval.messages</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#log-flush-interval-ms-1"><span class="toc-number">11.4.1.2.</span> <span class="toc-text">log.flush.interval.ms</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

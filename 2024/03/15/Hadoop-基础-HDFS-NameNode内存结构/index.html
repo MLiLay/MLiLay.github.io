@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Hadoop-HDFS-NameNode内存结构 | Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="NaneNode 内存机制 概述NameNode 管理着整个 HDFS 文件系统的元数据。从架构设计上看，元数据大致分成两个层次：  Namespace 管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系； 块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系 BlocksMap，如图 1 所示。   Namespace 管理的元数据除内存常驻外，也会周期 Flush">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hadoop-HDFS-NameNode内存结构">
+<meta property="og:url" content="http://example.com/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-NameNode%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="NaneNode 内存机制 概述NameNode 管理着整个 HDFS 文件系统的元数据。从架构设计上看，元数据大致分成两个层次：  Namespace 管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系； 块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系 BlocksMap，如图 1 所示。   Namespace 管理的元数据除内存常驻外，也会周期 Flush">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:published_time" content="2024-03-15T08:05:33.000Z">
+<meta property="article:modified_time" content="2024-06-29T10:10:01.679Z">
+<meta property="article:author" content="CHLi">
+<meta property="article:tag" content="Hadoop">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-NameNode%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hadoop-HDFS-NameNode内存结构',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-29 18:10:01'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Hadoop-HDFS-NameNode内存结构</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-15T08:05:33.000Z" title="发表于 2024-03-15 16:05:33">2024-03-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-29T10:10:01.679Z" title="更新于 2024-06-29 18:10:01">2024-06-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Hadoop-HDFS-NameNode内存结构"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><a target="_blank" rel="noopener" href="https://tech.meituan.com/2016/08/26/namenode.html">NaneNode 内存机制</a></p>
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>NameNode 管理着整个 HDFS 文件系统的元数据。从架构设计上看，元数据大致分成两个层次：</p>
+<ul>
+<li>Namespace 管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系；</li>
+<li>块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系 BlocksMap，如图 1 所示。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314161205.png" alt="image.png"></p>
+<p>Namespace 管理的<strong>元数据除内存常驻外</strong>，也会<strong>周期 Flush 到持久化设备上 FsImage 文件</strong>；</p>
+<p><strong>BlocksMap 元数据只在内存中存在</strong>；</p>
+<h3 id="NameNode-重启规则"><a href="#NameNode-重启规则" class="headerlink" title="NameNode 重启规则"></a>NameNode 重启规则</h3><p>当 NameNode 发生重启。</p>
+<ol>
+<li>首先从持久化设备中读取 FsImage 构建 Namespace，</li>
+<li>之后根据 DataNode 的汇报信息重新构造 BlocksMap。</li>
+</ol>
+<p>这两部分数据结构是占据了 NameNode 大部分 JVM Heap 空间。除了对文件系统本身元数据的管理之外，NameNode还需要维护整个集群的机架及DataNode的信息、Lease管理以及集中式缓存引入的缓存管理等等。这几部分数据结构空间占用相对固定，且占用较小。</p>
+<h1 id="内存全景"><a href="#内存全景" class="headerlink" title="内存全景"></a>内存全景</h1><p>如前述，NameNode整个内存结构大致可以分成四大部分：Namespace、BlocksMap、NetworkTopology及其它，图2为各数据结构内存逻辑分布图示。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314161502.png" alt="image.png"></p>
+<ul>
+<li><strong>Namespace</strong>：维护整个文件系统的目录树结构及目录树上的状态变化； </li>
+<li><strong>BlockManager</strong>：维护整个文件系统中与数据块相关的信息及数据块的状态变化； </li>
+<li><strong>NetworkTopology</strong>：维护机架拓扑及 DataNode 信息，机架感知的基础；</li>
+<li>其它： LeaseManager：读写的互斥同步就是靠 Lease 实现，支持 HDFS 的 Write-Once-Read-Many 的核心数据结构； CacheManager：Hadoop 2.3.0引入的集中式缓存新特性，支持集中式缓存的管理，实现 memory-locality 提升读性能； SnapshotManager：Hadoop 2.1.0引入的 Snapshot 新特性，用于数据备份、回滚，以防止因用户误操作导致集群出现数据问题； DelegationTokenSecretManager：管理 HDFS 的安全访问；另外还有临时数据信息、统计信息 metrics 等等。</li>
+</ul>
+<p>NameNode<strong>常驻内存主要被Namespace和BlockManager使用</strong>，二者使用占比分别接近50%。其它部分内存开销较小且相对固定，与Namespace和BlockManager相比基本可以忽略。</p>
+<h1 id="内存分析"><a href="#内存分析" class="headerlink" title="内存分析"></a>内存分析</h1><h2 id="Namespace"><a href="#Namespace" class="headerlink" title="Namespace"></a>Namespace</h2><p>HDFS对文件系统的目录结构也是按照树状结构维护，Namespace保存了目录树及每个目录/文件节点的属性。</p>
+<p>除在内存常驻外，这部分数据会<strong>定期flush到持久化设备上</strong>，生成一个新的FsImage文件，方便NameNode发生重启时，从FsImage及时恢复整个Namespace。</p>
+<p>前述集群中目录和文件总量即整个Namespace目录树中包含的节点总数，可见Namespace本身其实是一棵非常巨大的树。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314162544.png" alt="image.png"></p>
+<p>在整个Namespace目录树中存在两种不同类型的INode数据结构：<strong>INodeDirectory和INodeFile。</strong></p>
+<ul>
+<li><strong>INodeDirectory</strong>：标识的是目录树中的目录。</li>
+<li><strong>INodeFile</strong> ：标识的是目录树中的文件。</li>
+</ul>
+<p>由于<strong>二者均继承自INode</strong>，所以具备大部分相同的公共信息INodeWithAdditionalFields，除常用基础属性外，其中还提供了扩展属性features，如Quota、Snapshot等均通过Feature增加，如果以后出现新属性也可通过Feature方便扩展。不同的是，INodeFile特有的标识副本数和数据块大小组合的header（2.6.1之后又新增了标识存储策略ID的信息）及该文件包含的有序Blocks数组；INodeDirectory则特有<strong>子节点的列表children</strong>。这里需要特别说明<strong>children是默认大小为5的ArrayList</strong>，按照子节点name有序存储，虽然在插入时会损失一部分写性能，但是可以方便后续快速二分查找提高读性能，对一般存储系统，读操作比写操作占比要高。具体的继承关系见图所示。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314162801.png" alt="image.png"></p>
+<h2 id="BlockManager"><a href="#BlockManager" class="headerlink" title="BlockManager"></a>BlockManager</h2><p>BlocksMap在NameNode内存空间占据很大比例，由BlockManager统一管理，相比Namespace，BlockManager管理的这部分数据要复杂的多。</p>
+<p><strong>Namespace与BlockManager之间通过前面提到的INodeFile有序Blocks数组关联到一起</strong>。图所示BlockManager管理的内存结构。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314162914.png" alt="image.png"></p>
+<p>每一个 <strong>INodeFile 都会包含数量不等的 Block</strong>，具体数量由文件大小及每一个 Block 大小（默认为64M）比值决定，<strong>这些 Block 按照所在文件的先后顺序组成 BlockInfo 数组</strong>，如图所示的 BlockInfo[A~K]，<strong>BlockInfo 维护的是 Block 的元数据</strong>，结构如图所示</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314163150.png" alt="image.png"></p>
+<p>数据本身是由 DataNode 管理，所以 BlockInfo 需要包含实际数据到底由哪些 DataNode 管理的信息，这里的核心是名为 triplets 的 Object 数组，大小为3replicas，其中 replicas 是 Block 副本数量。triplets 包含的信息：</p>
+<ul>
+<li>triplets[i]：Block所在的DataNode；</li>
+<li>triplets[i+1]：该DataNode上前一个Block；</li>
+<li>triplets[i+2]：该DataNode上后一个Block；</li>
+</ul>
+<p>其中 i 表示的是 Block 的第 i 个副本，i 取值(0,replicas)。</p>
+<p>从前面描述可以看到BlockInfo几块重要信息：</p>
+<ul>
+<li>文件包含了哪些 Block</li>
+<li>这些 Block 分别被实际存储在哪些 DataNode 上</li>
+<li>DataNode 上所有 Block 前后链表关系。<br><strong>注：这里的前后连表关系是双向链表</strong></li>
+</ul>
+<h3 id="BlockMap"><a href="#BlockMap" class="headerlink" title="BlockMap"></a>BlockMap</h3><p><strong>为解决更具 Blockid 实现快速定位的问题</strong></p>
+<p>底层是靠LightWeightGSet实现，本质是一个<strong>链式解决冲突的哈希表</strong>。</p>
+<p>为了避免rehash过程带来的性能开销，初始化时，<strong>索引空间直接给到了整个JVM可用内存的2%</strong>，并且<strong>不再变化</strong>。</p>
+<p>集群启动过程，DataNode会进行BR（BlockReport），根据BR的每一个Block计算其HashCode，之后将对应的BlockInfo插入到相应位置逐渐构建起来巨大的BlocksMap。</p>
+<p><strong>注</strong>：事实上 <strong>BlocksMap 里所有的 BlockInfo 就是 INodeFile 中对应 BlockInfo 的引用</strong>；通过 Block 查找对应 BlockInfo 时，也是先对 Block 计算 HashCode，根据结果快速定位到对应的 BlockInfo 信息。</p>
+<h3 id="动态数据"><a href="#动态数据" class="headerlink" title="动态数据"></a>动态数据</h3><ul>
+<li><strong>excessReplicateMap</strong>：若某个 Block 实际存储的副本数多于预设副本数，这时候需要删除多余副本，这里多余副本会被置于 excessReplicateMap 中。excessReplicateMap 是从 DataNode 的 StorageID 到 Block 集合的映射集。 </li>
+<li><strong>neededReplications</strong>：若某个 Block 实际存储的副本数少于预设副本数，这时候需要补充缺少副本，这里哪些 Block 缺少多少个副本都统一存在 neededReplications 里，本质上 <strong>neededReplications 是一个优先级队列</strong>，缺少副本数越多的 Block 之后越会被优先处理。</li>
+<li><strong>invalidateBlocks</strong>：若某个 Block 即将被删除，会被置于 invalidateBlocks 中。</li>
+<li><strong>corruptReplicas</strong>：有些场景Block由于时间戳/长度不匹配等等造成Block不可用，会被暂存在corruptReplicas中，之后再做处理。</li>
+</ul>
+<h4 id="动态变化过程"><a href="#动态变化过程" class="headerlink" title="动态变化过程"></a>动态变化过程</h4><p>BlockManager内部的<strong>ReplicationMonitor线程</strong>（图5标识Thread/Monitor）会持续从其中取出数据并通过逻辑处理后分发给具体的DatanodeDescriptor对应数据结构（NetworkTopology里会有简单介绍），当对应DataNode的心跳过来之后，NameNode会遍历DatanodeDescriptor里暂存的数据，将其转换成对应指令返回给DataNode，DataNode收到任务并执行完成后再反馈回NameNode，之后DatanodeDescriptor里对应信息被清除。</p>
+<p>如BlockB预设副本数为3，由于某种原因实际副本变成4（如之前下线的DataNode D重新上线，其中B正好有BlockB的一个副本数据）</p>
+<ol>
+<li>BlockManager 能及时发现副本变化，并将多余的 DataNode D 上 BlockB 副本放置到 excessReplicateMap 中</li>
+<li>ReplicationMonitor 线程定期检查时发现 excessReplicateMap 中数据后将其移到 DataNode D 对应 DatanodeDescriptor 中 invalidateBlocks 里</li>
+<li>当 DataNode D 下次心跳过来后，随心跳返回删除 Block B 的指令</li>
+<li>DataNode D 收到指令实际删除其上的 Block B 数据并反馈回 NameNode</li>
+<li>此后 BlockManager 将 DataNode D 上的 Block B 从内存中清除，至此 Block B 的副本符合预期，整个流程如图所示。</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314164438.png" alt="image.png"></p>
+<h2 id="NetworkTopology"><a href="#NetworkTopology" class="headerlink" title="NetworkTopology"></a>NetworkTopology</h2><p>事实上NameNode确实还需要管理所有DataNode，不仅如此，由于数据写入前需要确定数据块写入位置，NameNode还维护着整个机架拓扑NetworkTopology。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314164645.png" alt="image.png"></p>
+<p>这里包含两个部分：机架拓扑结构NetworkTopology和DataNode节点信息。</p>
+<p>其中树状的机架拓扑是根据机架感知（一般都是外部脚本计算得到）在<strong>集群启动完成后建立起来</strong>，整个机架的拓扑结构在NameNode的生命周期内<strong>一般不会发生变化</strong>；</p>
+<p>另一部分是比较关键的DataNode信息，BlockManager已经提到每一个DataNode上的Blocks集合都会形成一个双向链表，更准确的应该是<strong>DataNode的每一个存储单元DatanodeStorageInfo上的所有Blocks集合会形成一个双向链表</strong>，这个链表的入口就是机架拓扑结构叶子节点即DataNode管理的DatanodeStorageInfo。</p>
+<p>此外由于上层应用对数据的增删查随时发生变化，随之 DatanodeStorageInfo 上的 Blocks 也会动态变化，所以 NetworkTopology 上的 DataNode 对象还会管理这些动态变化的数据结构，如 replicateBlocks/recoverBlocks/invalidateBlocks，这些数据结构正好和 BlockManager 管理的动态数据结构对应，实现了数据的动态变化由 BlockManager 传达到 DataNode 内存对象最后通过指令下达到物理 DataNode 实际执行的流动过程。</p>
+<h2 id="LeaseManager"><a href="#LeaseManager" class="headerlink" title="LeaseManager"></a>LeaseManager</h2><p>HDFS支持Write-Once-Read-Many，对文件写操作的互斥同步靠Lease实现。</p>
+<p>Lease实际上是时间约束锁，其主要特点是排他性。</p>
+<p>客户端写文件时需要先申请一个Lease，一旦有客户端持有了某个文件的Lease，其它客户端就不可能再申请到该文件的Lease，这就保证了同一时刻对一个文件的写操作只能发生在一个客户端。</p>
+<p>NameNode 的 LeaseManager 是 Lease 机制的核心，维护了文件与 Lease、客户端与 Lease 的对应关系，这类信息会随写数据的变化实时发生对应改变。</p>
+<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240314165453.png" alt="image.png"></p>
+<ul>
+<li><p>sortedLeases：Lease 集合，按照时间先后有序组织，便于检查 Lease 是否超时；</p>
+</li>
+<li><p>leases：客户端到 Lease 的映射关系；</p>
+</li>
+<li><p>sortedLeasesByPath：文件路径到 Lease 的映射关系；</p>
+</li>
+</ul>
+<p>其中每一个写数据的客户端会对应一个Lease，每个Lease里包含至少一个标识文件路径的Path。</p>
+<p>Lease本身已经维护了其持有者（客户端）及该Lease正在操作的文件路径集合，之所以增加了leases和sortedLeasesByPath为提高通过Lease持有者或文件路径快速索引到Lease的性能。</p>
+<h3 id="硬超时和软超时"><a href="#硬超时和软超时" class="headerlink" title="硬超时和软超时"></a>硬超时和软超时</h3><p>正常情况下，客户端向集群写文件前需要向NameNode的LeaseManager申请Lease；写文件过程中定期更新Lease时间，以防Lease过期，周期与softLimit相关；写完数据后申请释放Lease。</p>
+<p>整个过程可能发生两类问题：</p>
+<ol>
+<li>写文件过程中客户端没有及时更新 Lease 时间；</li>
+<li>写完文件后没有成功释放 Lease。</li>
+</ol>
+<p>两个问题分别对应为 softLimit 和 hardLimit。</p>
+<p>两种场景都会触发 LeaseManager 对 Lease 超时强制回收。</p>
+<p>如果客户端写文件过程中没有及时更新 Lease 超过 softLimit 时间后，另一客户端尝试对同一文件进行写操作时触发 Lease 软超时强制回收；</p>
+<p>如果客户端写文件完成但是没有成功释放 Lease，则会由 LeaseManager 的后台线程 LeaseManager.Monitor 检查是否硬超时后统一触发超时回收。</p>
+<p>不管是 softLimit 还是 hardLimit 超时触发的强制 Lease 回收，处理逻辑都一样：FSNamesystem.internalReleaseLease，逻辑本身比较复杂，这里不再展开。</p>
+<p>简单的说先对 Lease 过期前最后一次写入的 Block 进行检查和修复，之后释放超时持有的 Lease，保证后面其它客户端的写入能够正常申请到该文件的 Lease。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">CHLi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-NameNode%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">http://example.com/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-NameNode%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Mr.Li's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hadoop/">Hadoop</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.JPG" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-Yarn-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-Yarn-原理及调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hadoop-Yarn-原理及调优</div></div></a></div><div class="next-post pull-right"><a href="/2024/03/14/Hadoop-%E5%9F%BA%E7%A1%80-MapReducer-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-MapReduce-原理及调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hadoop-MapReduce-原理及调优</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/01/28/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-API/" title="Hadoop-HDFS-API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-28</div><div class="title">Hadoop-HDFS-API</div></div></a></div><div><a href="/2024/03/21/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-HDFS%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" title="Hadoop-HDFS-数据读写"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-21</div><div class="title">Hadoop-HDFS-数据读写</div></div></a></div><div><a href="/2024/01/31/Hadoop-%E5%9F%BA%E7%A1%80-MapReduce-%E7%A4%BA%E4%BE%8B/" title="Hadoop-MapReduce-示例"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-31</div><div class="title">Hadoop-MapReduce-示例</div></div></a></div><div><a href="/2024/03/14/Hadoop-%E5%9F%BA%E7%A1%80-MapReducer-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-MapReduce-原理及调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-14</div><div class="title">Hadoop-MapReduce-原理及调优</div></div></a></div><div><a href="/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-Yarn-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-Yarn-原理及调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-15</div><div class="title">Hadoop-Yarn-原理及调优</div></div></a></div><div><a href="/2024/03/14/Hadoop-%E5%B8%B8%E8%A7%81%E7%AB%AF%E5%8F%A3/" title="Hadoop-常用接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-14</div><div class="title">Hadoop-常用接口</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NameNode-%E9%87%8D%E5%90%AF%E8%A7%84%E5%88%99"><span class="toc-number">1.0.1.</span> <span class="toc-text">NameNode 重启规则</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%85%A8%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">内存全景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">内存分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Namespace"><span class="toc-number">3.1.</span> <span class="toc-text">Namespace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BlockManager"><span class="toc-number">3.2.</span> <span class="toc-text">BlockManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BlockMap"><span class="toc-number">3.2.1.</span> <span class="toc-text">BlockMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E6%95%B0%E6%8D%AE"><span class="toc-number">3.2.2.</span> <span class="toc-text">动态数据</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%8F%98%E5%8C%96%E8%BF%87%E7%A8%8B"><span class="toc-number">3.2.2.1.</span> <span class="toc-text">动态变化过程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NetworkTopology"><span class="toc-number">3.3.</span> <span class="toc-text">NetworkTopology</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LeaseManager"><span class="toc-number">3.4.</span> <span class="toc-text">LeaseManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84"><span class="toc-number">3.4.1.</span> <span class="toc-text">结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E8%B6%85%E6%97%B6%E5%92%8C%E8%BD%AF%E8%B6%85%E6%97%B6"><span class="toc-number">3.4.2.</span> <span class="toc-text">硬超时和软超时</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

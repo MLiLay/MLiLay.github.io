@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mr.Li&#39;s blog">
+<meta property="og:url" content="http://example.com/page/7/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:author" content="CHLi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/page/7/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Mr.Li\'s blog',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-06-30 16:54:46'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">Mr.Li's blog</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/10/11/Algorithm-%E6%9C%80%E7%9F%AD%E8%B7%AF%E7%AE%97%E6%B3%95/" title="Algorithm-最短路算法">Algorithm-最短路算法</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-10-11T08:16:32.000Z" title="发表于 2023-10-11 16:16:32">2023-10-11</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Algorithm/">Algorithm</a></span></div><div class="content">最短路问题难点在如何将一个问题抽象成为一个最短路问题，而不在最短路的算法上。
+单源最短路就是求从一个点 A 到令一个点 B 的最短路。
+所有边权重都是正数朴素 Dijkstra 算法
+时间复杂的 $O(n^2)$，适合稠密图，也就是边比较多，但是点比较少的图
+注意这里使用邻接矩阵构建的图
+123456789101112131415161718static int Dijkstra() &#123;	Arrays.fill(dist, 0x3f3f3f3f); // 从1到各个点的距离初始化	dist[1] = 0;	for(int i = 0; i &lt; n; i++) &#123;		// 从没有确定最短距离的点的集合中选取出距离最近的点		int t = -1;		for(int j = 1; j &lt;= n; j++0) &#123;			if(!st[j] &amp;&amp; (t == -1 || dist[t] &gt; dist[j])) t = j;		&#125;		st[t] = true;		// 更新所有点的权重		for(int j = 1; j & ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/10/11/Algorithm-%E9%AB%98%E7%B2%BE%E5%BA%A6/" title="Algorithm-高精度">Algorithm-高精度</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-10-11T08:16:32.000Z" title="发表于 2023-10-11 16:16:32">2023-10-11</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Algorithm/">Algorithm</a></span></div><div class="content">高精度高精度只是在c/c++中需要考虑，在java和python中不需要考虑。高精度一般是指对位数很高的数进行操作。
+在对高精度数的存储时一般是低位数存储在数组前部，此时数组中的第一个位数应该是个位数。
+高精度加法高精度加法主要是模拟正常加法时的预算过程，用一个变量t来存储进位数。
+算法模版：123456789101112131415161718// C = A + B, A &gt;= 0, B &gt;= 0vector&lt;int&gt; add(vector&lt;int&gt; &amp;A, vector&lt;int&gt; &amp;B)&#123;    if (A.size() &lt; B.size()) return add(B, A); // 保证是大数加上小数，这样最后剩余的就可以全部运算完毕而不需要另外的判断。    vector&lt;int&gt; C;    int t = 0;    for (int i = 0; i &lt; A.size(); i ++ ) // 以大数的位数为结束边界    &#123;        t += A[i]; ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/10/11/Algorithm-%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91/" title="Algorithm-最小生成数">Algorithm-最小生成数</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-10-11T08:16:32.000Z" title="发表于 2023-10-11 16:16:32">2023-10-11</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Algorithm/">Algorithm</a></span></div><div class="content">最小生成树问题Prim 算法时间复杂度：$O(n^2)$
+适用场景：稠密图
+主要思想：prime 算法的思想和 Dijkstra 算法的思想相似，都是从不在集合 S 中的距离最近的点加入到集合中，然后更新其中的所有点到集合 S 的距离。在 Prim 算法中的集合 S 代表的是最小生成树种的节点集，在 Dijkstra 算法中代表的是在最短路径中的点。
+代码如下：
+1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465import java.io.BufferedReader;import java.io.IOException;import java.io.InputStreamReader;import java.util.Arrays;  public class test_858 &#123;    static int N = 510;    static int[] dist = new i ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/07/31/Knowledge-transformer/" title="Knowledge-transformer">Knowledge-transformer</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-31T09:38:21.000Z" title="发表于 2023-07-31 17:38:21">2023-07-31</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">Self-attention整体结构
+
+
+ $q^i$ 代表的是输入 $a^i$ 乘以一个权重矩阵 $W^q$（这个矩阵是唯一的） 得到的一个向量，其用途是用来和之后其他输入的 $k^i$ 进行计算（计算用的比较多的就是点乘）得到该输入和之后每个输入之间的相关性，即 $\alpha_{i,j}$。
+
+在得到第一个输入与其他输入之间的相关性后，计算通过将 $a^i$ 乘以一个权重矩阵得到 $v^i$，其代表的是能够代表输入的具体信息，之后将之前计算得到的相关性 $\alpha_{i,j}$ 乘以现在得到的 $v^j$ 得到最后的输出 $b^i$。
+矩阵乘法的角度
+所有的 Q 其实可以看做将输入的 $a^i$ 进行拼接，乘以一个矩阵得到 $q^i$ 的拼接 Q。当然 K，V 也同理。
+
+如 Q，K，V 的计算相似，A 的计算也可以在矩阵上理解为向量堆叠后矩阵之间的计算。
+
+
+Muti-head Self-attention
+多头注意力机制其实就是权重矩阵 $W^q,W^k,W^v$ 不唯一，这样每一个输入 $a^i$ 就会产生多个 $q^{i,j},k^{i,j},v^{i,j}$ ，对应 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/07/19/Knowledge-CapsNet/" title="Knowledge-CapsNet">Knowledge-CapsNet</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-07-19T10:38:24.000Z" title="发表于 2023-07-19 18:38:24">2023-07-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">CapsNet解决的问题在文章中作者认为卷积神经网络中单纯的 Pooling 操作，如 MaxPooling 等。可能会随机丢失数据中有用的信息，无法很好的选择出有价值的信息。
+整体结构
+其实可以看到整体上分为三个部分，第一部分是一个卷积的操作，也就是简单的提取特征的操作得到 PrimaryCaps。第二部分是将 PrimaryCaps 层通过一定的操作得到 DigitCaps, DigitCaps 层中存放的是 num_class 个向量代表模型预测。第三部分是计算损失函数更新 $W_{ij}$ 矩阵。
+第一部分：卷积操作卷积输出计算公式在论文中对于一个 维度为 28  28 的手写数字图片，在上面使用了 256个 9  9 的 卷积核得到了一个 20  20  256 的输出，然后再次使用 256 个 9  9 的卷积核得到 6  6 * 256 的输出。
+第二部分：  动态路由算法首先将 PrimaryCaps 从第一部分卷积操作得到的 6  6  256 分割成为 32 个 6  6  8 的小块，然后将其中每一个 1  1  8 的向量定义 $u_i$ 。
+然后将每一个 $u ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/06/20/Knowledge-pytorch/" title="Knowledge-pytorch">Knowledge-pytorch</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-06-20T10:32:25.000Z" title="发表于 2023-06-20 18:32:25">2023-06-20</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">索引123456789[1,:] # 一行[:,1] # 一列# 1：3 后面那个一般是开括号，也就是不包含[1:3, 1:] # 块区间，第1,2行，第一列及之后列[::3,::2] # 跳着选，每三行两列选一个数x[-1] # 表示最后一行torch.where(condition, x, y) # 按照条件从x和y中选出满足条件的元素组成新的tensorb = torch.nonzero(a &gt; 6, as_tuple) # 按照条件返回下标torch.index_select(a, dim=0, index = b.squeeze) # 按照条件返回对应元素组成的tensor
+数组12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455import torch# x数一个tensor数组x.numel() # number of elements 代表数组中元素个数torch.cat((x,y), dim = 0), torch ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/05/05/Knowledge-%E5%8F%AF%E5%88%86%E7%A6%BB%E5%8D%B7%E7%A7%AF/" title="Knowledge-可分离卷积">Knowledge-可分离卷积</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-05-05T09:08:55.000Z" title="发表于 2023-05-05 17:08:55">2023-05-05</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">Separable Convolution解决问题传统卷积网络计算参数过大，可分离卷积就是将卷积核进行拆分进行多次运算，使得计算量变小，训练速度加快。
+spatial separable convolutions空间分离卷积（spatial separable convolutions），顾名思义就是在空间维度将标准卷积运算进行拆分，将标准卷积核拆分成多个小卷积核。例如我们可以将卷积核拆分成两个（或多个）向量的外积：这样对对于一副图像的$33$的卷积操作就可以变成先进行一次$13$的卷积操作，然后进行一次的$3*1$的卷积操作。
+depthwise separable convolutions深度可分离卷积也是一样，核心也是对卷积核的拆分。深度可分离卷积分为：
+
+深度卷积
+逐点卷积标准卷积对于一个$12123$的图像，对其进行卷积，卷积核为$553$，且没有padding填充，最后会得到$881$的特征深度卷积运算对于一个$12123$的图像，对其进行卷积，卷积核为$553$，且没有padding填充。可以将其先分为3个$551$的卷积核在三个通道上进行卷积，在没有padding填充的 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/04/12/Knowledge-DenseNet/" title="Knowledge-DenseNet">Knowledge-DenseNet</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-04-12T03:26:27.074Z" title="发表于 2023-04-12 11:26:27">2023-04-12</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">文章信息论文：Densely Connected Convolutional Networks论文链接：https://arxiv.org/pdf/1608.06993.pdf代码的github链接：https://github.com/liuzhuang13/DenseNetMXNet版本代码（有ImageNet预训练模型）: https://github.com/miraclewkf/DenseNet
+主要解决的问题及方法问题当网络的结构加深或加宽时，会出现梯度消失的情况。
+方法DenseNet从feature的角度入手。在每一个DenseBlock中每一层的输入是，前面所有层的输出，也就是下图的样子：文章中对于这种方法能够减少梯度消失出现的解释是：Each layer has direct access to the gradients from the loss function and the original input signal, leading to an implicit deep supervision.就是说对于每层都可以直接地连接loss和input，而梯度 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/03/27/Knowledge-%E6%A6%82%E7%8E%87%E8%AE%BA/" title="Knowledge-概率论">Knowledge-概率论</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-03-27T08:26:39.000Z" title="发表于 2023-03-27 16:26:39">2023-03-27</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">极大似然估计定义 通俗的说，就是利用已知的样本结果信息，反推最具有可能（最大概率)导致这些样本结果出现的模型参数值。也就是从结果退出最有可能使得产生这个结果的参数
+例子当一个泊松分布，$\theta$ 为摸到一号小球的概率，$1-\theta$ 为摸到二号小球的概率那么按以下顺序摸出小球的概率就为
+
+L(\theta)=\theta^3(1-\theta)^2上式就是似然函数所以极大似然估计就是求出$L(\theta)$的极大值点
+概率密度函数概率密度函数可以简单的理解为在$x$情况下出现特定结果的概率$y$的一个函数，即$y=f(x)$
+边缘概率密度函数边缘概率密度函数就是对$x,y$限定一个范围时得到的概率密度函数
+
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/03/14/Knowledge-Loss/" title="Knowledge-Loss">Knowledge-Loss</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-03-14T08:27:01.000Z" title="发表于 2023-03-14 16:27:01">2023-03-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="content">Triplet Loss公式
+L=\sum\limits_1^Mmax(d(a,p)-d(a,n)+margin,0)a：anchor，锚点或者可以简单理解为class的cluster的中心p：positive，与a是同label 的样本n：negative，与a是不同label的样本margin：一个大于0的常数
+目的拉近相同label 样本的距离，拉远不同label样本之间的距离
+样本种类easy triplets不需要优化的类型$L=0$，即$d(a,p)+margin&lt;d(a,n)$此时同label的样本之间的距离远小于不同label的样本之间的距离
+hard triplets需要优化的类型$L&gt;margin$，即$d(a,p)&gt;d(a,n)$此时同label的样本之间的距离远大于不同label的样本之间的距离
+semi-hard triplets需要优化的类型$L&lt;margin$，即$d(a,p)&lt;d(a,n)&lt;d(a,p)+margin$此时同label的样本之间的距离远小于不同label的样本之间的距离，但是两者的距离差距并不大
+为什么 ...</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/6/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/#content-inner">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/#content-inner">8</a><a class="extend next" rel="next" href="/page/8/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Algorithm/"><span class="card-category-list-name">Algorithm</span><span class="card-category-list-count">14</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Course/"><span class="card-category-list-name">Course</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hadoop/"><span class="card-category-list-name">Hadoop</span><span class="card-category-list-count">9</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hive/"><span class="card-category-list-name">Hive</span><span class="card-category-list-count">7</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Kafka/"><span class="card-category-list-name">Kafka</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Latex/"><span class="card-category-list-name">Latex</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/MySQL/"><span class="card-category-list-name">MySQL</span><span class="card-category-list-count">6</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/NIO/"><span class="card-category-list-name">NIO</span><span class="card-category-list-count">4</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Algorithm/" style="font-size: 1.45em; color: rgb(137, 82, 44)">Algorithm</a><a href="/tags/Hadoop/" style="font-size: 1.35em; color: rgb(128, 45, 73)">Hadoop</a><a href="/tags/Hive/" style="font-size: 1.3em; color: rgb(70, 198, 153)">Hive</a><a href="/tags/Kafka/" style="font-size: 1.2em; color: rgb(180, 50, 183)">Kafka</a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 1.35em; color: rgb(176, 23, 123)">机器学习</a><a href="/tags/Latex/" style="font-size: 1.15em; color: rgb(139, 27, 79)">Latex</a><a href="/tags/markdown/" style="font-size: 1.15em; color: rgb(174, 193, 198)">markdown</a><a href="/tags/MySQL/" style="font-size: 1.25em; color: rgb(14, 152, 75)">MySQL</a><a href="/tags/NIO/" style="font-size: 1.2em; color: rgb(182, 144, 93)">NIO</a><a href="/tags/Spark/" style="font-size: 1.4em; color: rgb(8, 144, 22)">Spark</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 1.2em; color: rgb(143, 143, 43)">数据分析</a><a href="/tags/Zookeeper/" style="font-size: 1.15em; color: rgb(47, 123, 194)">Zookeeper</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/05/"><span class="card-archive-list-date">五月 2024</span><span class="card-archive-list-count">10</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><span class="card-archive-list-count">12</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/03/"><span class="card-archive-list-date">三月 2024</span><span class="card-archive-list-count">25</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/02/"><span class="card-archive-list-date">二月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">一月 2024</span><span class="card-archive-list-count">3</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/12/"><span class="card-archive-list-date">十二月 2023</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/10/"><span class="card-archive-list-date">十月 2023</span><span class="card-archive-list-count">11</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">2</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">73</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-06-30T08:54:46.652Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

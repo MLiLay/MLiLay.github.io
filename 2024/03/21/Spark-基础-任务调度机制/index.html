@@ -1,0 +1,574 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spark-基础-任务调度机制 | Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="基本概念Application、Job、Stage、Task    名称 含义     Application 指用户提交的 Spark 应用程序   Job 指 Spark 作业，是 Application 的子集，由行动算子（action）触发   Stage 指 Spark 阶段，是 Job 的子集，以 RDD 的宽依赖为界   Task 指 Spark 任务，是 Stage 的子集，Spa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark-基础-任务调度机制">
+<meta property="og:url" content="http://example.com/2024/03/21/Spark-%E5%9F%BA%E7%A1%80-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%9C%BA%E5%88%B6/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="基本概念Application、Job、Stage、Task    名称 含义     Application 指用户提交的 Spark 应用程序   Job 指 Spark 作业，是 Application 的子集，由行动算子（action）触发   Stage 指 Spark 阶段，是 Job 的子集，以 RDD 的宽依赖为界   Task 指 Spark 任务，是 Stage 的子集，Spa">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:published_time" content="2024-03-21T12:21:57.000Z">
+<meta property="article:modified_time" content="2024-06-29T10:10:01.670Z">
+<meta property="article:author" content="CHLi">
+<meta property="article:tag" content="Spark">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/2024/03/21/Spark-%E5%9F%BA%E7%A1%80-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%9C%BA%E5%88%B6/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spark-基础-任务调度机制',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-29 18:10:01'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spark-基础-任务调度机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-21T12:21:57.000Z" title="发表于 2024-03-21 20:21:57">2024-03-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-29T10:10:01.670Z" title="更新于 2024-06-29 18:10:01">2024-06-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Spark/">Spark</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spark-基础-任务调度机制"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="Application、Job、Stage、Task"><a href="#Application、Job、Stage、Task" class="headerlink" title="Application、Job、Stage、Task"></a>Application、Job、Stage、Task</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>名称</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application</td>
+<td>指用户提交的 Spark 应用程序</td>
+</tr>
+<tr>
+<td>Job</td>
+<td>指 Spark 作业，是 Application 的子集，由<strong>行动算子</strong>（action）触发</td>
+</tr>
+<tr>
+<td>Stage</td>
+<td>指 Spark 阶段，是 Job 的子集，以 RDD 的<strong>宽依赖为界</strong></td>
+</tr>
+<tr>
+<td>Task</td>
+<td>指 Spark 任务，是 Stage 的子集，Spark 中最基本的任务执行单元，对应<strong>单个线程</strong>（<strong>一个 partition 就会划分出一个task</strong>），会被封装成 TaskDescription 对象提交到 Executor 的线程池中执行</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="Driver、Executor"><a href="#Driver、Executor" class="headerlink" title="Driver、Executor"></a>Driver、Executor</h2><h3 id="Driver"><a href="#Driver" class="headerlink" title="Driver"></a>Driver</h3><p>Driver 是<strong>运行用户程序 <code>main()</code> 函数并创建 SparkContext 的实例</strong>，是任务调度中最为关键的部分。</p>
+<p>在一个完整的任务调度中，用户提交的程序会经历 <strong>_Application → Job → Stage → Task_</strong> 的转化过程，而这整个转化过程，由 <strong>Driver 的 3 大核心模块共同完成</strong>，它们的名称与职责如下表所示：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>模块名称</strong></th>
+<th><strong>模块职责</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAGScheduler</td>
+<td>DAG 调度器，负责阶段（Stage）的划分并生成 TaskSet 传递给 TaskScheduler</td>
+</tr>
+<tr>
+<td>TaskScheduler</td>
+<td>Task 调度器，决定任务池调度策略，负责 Task 的管理（包括 Task 的提交与销毁）</td>
+</tr>
+<tr>
+<td>SchedulerBackend</td>
+<td>调度后端，维持与 Executor 的通信，并负责将 Task 提交到 Executor</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="Executor"><a href="#Executor" class="headerlink" title="Executor"></a>Executor</h3><p>Executor 是执行实际计算任务的实例，是任务调度的终点，它包含以下核心模块：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>模块名称</strong></th>
+<th><strong>模块功能</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ThreadPool</td>
+<td>任务执行线程池，用于执行 Driver 提交过来的 Task</td>
+</tr>
+<tr>
+<td>BlockManager</td>
+<td>存储管理器，为 RDD 提供缓存服务，可提高计算速率</td>
+</tr>
+<tr>
+<td>ExecutorBackend</td>
+<td>Executor 调度后端，维持与 Driver 的通信，并负责将任务执行结果反馈给 Driver</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="调度流程"><a href="#调度流程" class="headerlink" title="调度流程"></a>调度流程</h2><p>Spark 任务调度基本上会经历 <strong>_提交 → Stage 划分 → Task 调度 → Task 执行_</strong>，这个过程大致可以描述为：</p>
+<ol>
+<li>用户提交一个计算应用（Application）</li>
+<li>Driver 执行用户程序中的 <code>main()</code> 方法，根据行动算子提取作业（Job）</li>
+<li>DAGScheduler 解析各个作业的 DAG 进行阶段（Stage）划分和任务集（TaskSet）组装</li>
+<li>TaskScheduler 将任务集发送至任务队列 rootPool</li>
+<li>SchedulerBackend 通过 Cluster Manager 获取 Executor 资源，并将任务（Task）发送给 Executor</li>
+<li>Executor 执行计算并管理存储块（Block）</li>
+<li>Driver 最终从 Executor 获得计算结果，汇总后返回给用户</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319190933.png" alt="image.png"></p>
+<h1 id="Stage-划分"><a href="#Stage-划分" class="headerlink" title="Stage 划分"></a>Stage 划分</h1><p>Stage 划分是任务调度的第一步，由 DAGScheduler 完成，它决定了 <strong>一个 Job 将被划分为多少个 TaskSet</strong>。</p>
+<p>相较于 Task，Stage 的定义显得难以理解。在官方定义上，<strong>Stage 是一个并行任务（Task）的集合，这个集合上的 Task，都来源于同一个 Job，具有相同的计算逻辑。</strong></p>
+<p><strong>TaskSet 中 task 的数量由 Stage 中最后一个 RDD 的并行度（分区数）决定</strong></p>
+<h2 id="划分规则"><a href="#划分规则" class="headerlink" title="划分规则"></a>划分规则</h2><p>Stage 的划分方式可以简述为：<strong>在 DAG 中进行反向解析，遇到宽依赖就断开，遇到窄依赖就把当前的 RDD 加入到当前的阶段中。</strong>之所以这样划分，是因为宽依赖的位置意味着 Shuffle 的发生，表示这个位置后的 RDD 需要等待前序 RDD 计算完成后才可以开始计算。</p>
+<p>下图为 Stage 划分的示例：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319192555.png" alt="image.png"></p>
+<p>在这个示例中，DAGScheduler 反向解析，在 <strong>_RDD B → RDD A_</strong> 和 <strong>_RDD G → RDD F_</strong> 间发现 <strong>ShuffleDependency</strong>，于是在这两个位置进行阶段划分，分别得到 Stage 01、Stage 02 和 Stage 03。其中，Stage 01 和 Stage 02 的类型为 <strong>ShuffleMapStage</strong>，而 Stage 03 的类型为 <strong>ResultStage</strong>。</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319192731.png" alt="image.png"></p>
+<p>该图为 DAGScheduler 中关于阶段划分的源码实现，简单来说就是：</p>
+<ol>
+<li>用户提交作业，<code>handleJobSubmitted</code> 方法通过<strong>最后一个 RDD 解析出 ResultStage</strong>并提交给 <code>submitStage</code> 方法</li>
+<li><code>submitStage</code> 方法调用 <code>getMissingParentStages</code> 反向解析，<strong>提取 ResultStage 的 Parent Stage</strong></li>
+<li>若无 Parent Stage，直接调用 <code>submitMissingTasks</code> 方法，生成该阶段下的 TaskSet</li>
+<li>若存在 Parent Stage，将其添加到到队列 <code>waitingStages</code> 中</li>
+<li>当前序任务完成，<code>handleTaskCompletion</code> 会从 <code>waitingStages</code> 取出剩余的 Stage（可能既有 ShuffleMapStage 和 ResultStage）并提交，直至生成所有阶段的 TaskSet</li>
+</ol>
+<h1 id="Task-调度"><a href="#Task-调度" class="headerlink" title="Task 调度"></a>Task 调度</h1><p>一个相对完整的 Task 调度流转图如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319193817.png" alt="image.png"></p>
+<p>在这个流转图中，我们可以将 Task 调度大致分为 5 个阶段：</p>
+<ul>
+<li>初始化阶段：初始化 TaskScheduler 和 SchedulerBackend 的阶段</li>
+<li>提交阶段：任务提交到任务池 rootPool 的阶段</li>
+<li>启动阶段：从任务池 rootPool 取出任务并发布到 Executor 的阶段</li>
+<li>执行阶段：Executor 执行计算任务并存储计算结果的阶段</li>
+<li>回收阶段：任务回收、状态更新与资源释放的阶段</li>
+</ul>
+<h2 id="初始化阶段"><a href="#初始化阶段" class="headerlink" title="初始化阶段"></a>初始化阶段</h2><p>会分别初始化TaskScheduler、SchedulerBackend 以及HeartbeatReceiver，并启动SchedulerBackend 以及HeartbeatReceiver。</p>
+<p>SchedulerBackend 通过 ApplicationMaster 申请资源，并不断从 TaskScheduler 中拿到合适的Task 分发到Executor 执行。</p>
+<p>HeartbeatReceiver 负责接收 Executor 的心跳信息，监控Executor的存活状况，并通知到TaskScheduler。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319193957.png" alt="image.png"></p>
+<p>在初始化阶段，TaskScheduler 主要完成以下工作：</p>
+<ul>
+<li>初始化 SchedulableBuilder，决定任务调度策略，创建任务池 rootPool</li>
+<li>启动 SchedulerBackend</li>
+</ul>
+<p>SchedulerBackend 主要完成以下工作：</p>
+<ul>
+<li>创建并维持与 Executor 间的 RPC 连接</li>
+<li>申请 Executor 资源</li>
+</ul>
+<p>与 TaskScheduler 基本只有 TaskSchedulerImpl 一个实现类不同，SchedulerBackend 的实现类非常多，大体如下：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319194036.png" alt="image.png"></p>
+<p>实际上，SchedulerBackend 对 Executor 的资源申请在很多情况下是由 Cluster Manager （Yarn、Mesos 等）完成的，也正是因为这个原因，SchedulerBackend 拥有着非常多的实现类。</p>
+<p>仅介绍 Standalone 模式下申请 Executor 的过程，其他模式大致相同只是 SchedulerBackend 的实现类不同，其过程如下：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319194253.png" alt="image.png"></p>
+<p>在这个过程中，Executor 的创建发生在 CoarseGrainedExecutorBackend。它是 Executor 的调度后端，会建立与 Driver 的通信连接，然后创建 Executor 实例并将 Executor 的信息传递给 Driver。接收到 Executor 资源后，Driver 端的SchedulerBackend 会将 Executor 资源放入 <code>executorDataMap</code>，等待 Task 调度时提取。</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319194322.png" alt="image.png"></p>
+<p><strong>注</strong>：CoarseGrainedExecutorBackend 是一个独立的进程，由 ExecuteRunner 调用 Java 的 Process 类库启动，并非是 Worker 进程的一部分。</p>
+<h2 id="提交阶段"><a href="#提交阶段" class="headerlink" title="提交阶段"></a>提交阶段</h2><p>提交阶段由 TaskScheduler 的 <code>submitTasks</code> 方法触发，它主要完成以下工作：</p>
+<ul>
+<li>创建 TaskSetManager</li>
+<li>将 TaskSetManager 添加至任务池 rootPool</li>
+</ul>
+<p>在这个过程中，存在着两个核心角色：TaskSetManager 和 SchedulableBuilder。</p>
+<h4 id="TaskSetManager"><a href="#TaskSetManager" class="headerlink" title="TaskSetManager"></a>TaskSetManager</h4><p>TaskSetManager 由 TaskScheduler 封装 TaskSet 而来，是 TaskScheduler 进行任务调度的基本单元：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319194428.png" alt="image.png"></p>
+<p>TaskSetManager 负责监控和管理同一个 Stage 中的任务集（包括 Executor 资源的匹配、任务执行结果的处理等），同时也负责管理本地化调度级别 TaskLocality。</p>
+<p>TaskSetManager 有 3 个核心方法：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>方法名</strong></th>
+<th><strong>功能描述</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>resourceOffer</strong>(_execId_, _host_, _maxLocality_, _taskResourceAssignments_)</td>
+<td>为一个任务分配一个 Executor 资源，以描述符 TaskDescription 返回，该描述符包含了 Task、Executor 及依赖包等信息</td>
+</tr>
+<tr>
+<td><strong>handleSuccessfulTask</strong>(_tid_, _result_)</td>
+<td>标记任务为成功状态，并通知 DAGScheduler 该任务已完成</td>
+</tr>
+<tr>
+<td><strong>handleFailedTask</strong>(_tid_, _state_, _reason_)</td>
+<td>标记任务为失败状态，并重新加入调度队列</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="SchedulableBuilder"><a href="#SchedulableBuilder" class="headerlink" title="SchedulableBuilder"></a>SchedulableBuilder</h4><p>SchedulableBuilder 负责将 TaskSetManager 添加到任务池 rootPool，它有两种实现类：</p>
+<ul>
+<li>FIFOSchedulableBuilder：对应 FIFO 调度策略，以先进先出的顺序添加 TaskSetManager</li>
+<li>FairSchedulableBuilder ：对应 Fair 调度策略，可通过配置控制入队优先级</li>
+</ul>
+<h5 id="FairSchedulableBuilder"><a href="#FairSchedulableBuilder" class="headerlink" title="FairSchedulableBuilder"></a>FairSchedulableBuilder</h5><p>FAIR 调度策略的树结构如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319194706.png" alt="image.png"></p>
+<p>FAIR 模式中有一个 rootPool 和多个子 Pool，各个子 Pool 中存储着所有待分配的TaskSetMagager。</p>
+<p>在 FAIR 模式中，需要先对子Pool 进行排序，再对子Pool 里面的TaskSetMagager 进行排序，因为 Pool 和 TaskSetMagager 都继承了 Schedulable 特质，因此使用相同的排序算法。</p>
+<p>排序过程的比较是基于 Fair-share 来比较的，每个要排序的对象包含三个属性:</p>
+<ul>
+<li>runningTasks 值（正在运行的 Task 数）</li>
+<li>minShare 值、</li>
+<li>weight 值</li>
+</ul>
+<p>比较时会综合考量 runningTasks值，minShare 值以及weight 值。</p>
+<p>注意，minShare、weight 的值均在公平调度配置文件 fairscheduler.xml 中被指定，调度池在构建阶段会读取此文件的相关配置。</p>
+<p>1) 如果 A 对象的 runningTasks 大于它的 minShare， B 对象的 runningTasks 小于它的 minShare，那么B 排在A 前面；（<strong>runningTasks 比minShare 小的先执行</strong>）</p>
+<p>2) 如果 A、B 对象的 runningTasks 都小于它们的 minShare，那么就比较 runningTasks 与minShare 的比值（minShare 使用率），谁小谁排前面；（<strong>minShare 使用率低的先执行</strong>）</p>
+<p>3) 如果 A、B 对象的 runningTasks 都大于它们的 minShare，那么就比较 runningTasks 与weight 的比值（权重使用率），谁小谁排前面。（<strong>权重使用率低的先执行</strong>）</p>
+<p>4) 如果上述比较均相等，则比较名字。</p>
+<p>整体上来说就是通过 minShare 和 weight 这两个参数控制比较过程，可以做到让 minShare使用率和权重使用率少（实际运行 task 比例较少）的先运行。FAIR 模式排序完成后，所有的 TaskSetManager 被放入一个 ArrayBuffer 里，之后依次被取出并发送给Executor 执行。从调度队列中拿到 TaskSetManager 后，由于 TaskSetManager 封装了一个 Stage 的所有Task，并负责管理调度这些 Task，那么接下来的工作就是 TaskSetManager 按照一定的规则一个个取出 Task 给TaskScheduler，TaskScheduler 再交给 SchedulerBackend 去发到 Executor上执行。</p>
+<h2 id="启动阶段"><a href="#启动阶段" class="headerlink" title="启动阶段"></a>启动阶段</h2><p>启动阶段指从任务池 rootPool 取出任务并发布到 Executor 的过程。</p>
+<p>相较于提交阶段，启动阶段的调度逻辑要复杂很多，涉及到 <strong>RPC 通信</strong>、<strong>资源的筛选</strong>、<strong>任务与资源的匹配</strong>、<strong>本地化调度</strong> 等。以 Standalone 模式为例，这个过程，简单来说，可以表述为：</p>
+<ol>
+<li>StandaloneSchedulerBackend 的 <strong><code>reviveOffers</code></strong> 方法向 DriverEndPoint 发起 ReviveOffers 请求</li>
+<li>DriverEndPoint 接收到ReviveOffers 请求，触发 <code>makeOffers</code> 方法，筛选出活跃的 Executor 资源，然后以 Seq[WorkerOffer] 的形式发送给 TaskScheduler 的 <code>resourceOffers</code> 方法</li>
+<li>TaskScheduler 获取到 Executor 资源后，会先行过滤，然后通过 <code>Random.shuffle(offers)</code> 将 Executor 资源随机排列，以避免 Task 总是落到同一个 Worker 节点</li>
+<li>排列好资源后，TaskScheduler 便会从 rootPool 提取 TaskSetManager</li>
+<li>TaskSetManager 根据 TaskLocation（由 RDD 的 <code>preferredLocations</code> 方法计算而来）初始化当前任务集所支持的本地化级别 TaskLocality，并将任务所期望的 <code>executorId</code>（Executor 的唯一标识）发送给 PendingTasksByLocality</li>
+<li>TaskScheduler 以当前支持的最大本地化级别分配 Executor 给 Task</li>
+<li>若 Task 存储在 PendingTasksByLocality 的期望 <code>executorId</code> 与分配到的 Executor 一致，则认为分配成功，<strong>并从 PendingTasksByLocality 中移除已配对成功的 Task 的下标，以避免重复分配的现象发生</strong></li>
+<li>若 Task 存储在 PendingTasksByLocality 的期望 <code>executorId</code> 与分配到的 Executor 不一致，则认为分配失败，此时需要降低当前支持的最大本地化级别，并重新配对，直至配对成功</li>
+<li>将配对成功的 Task 与 Executor 封装成 TaskDescription 对象，返回给 DriverEndPoint</li>
+<li>DriverEndPoint 根据 TaskDescription 中的 <code>executorId</code> 从 <code>executorDataMap</code> 取得 Executor 的通信地址，然后将序列化后的 TaskDescription 对象发布给 Executor，至此启动阶段结束</li>
+</ol>
+<p><strong>注</strong>：若 Task 的 TaskLocation 为空，则 PendingTasksByLocality 会以数组 <code>val noPrefs = new ArrayBuffer[Int]</code> 存储 Task 的下标，并默认以 <code>PROCESS_LOCAL</code> 级别去匹配 Executor 资源。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><h4 id="问题-1-Executor-申请成功的时间晚于-reviveOffers-触发的时间，任务会发布失败吗？"><a href="#问题-1-Executor-申请成功的时间晚于-reviveOffers-触发的时间，任务会发布失败吗？" class="headerlink" title="问题 1:_Executor 申请成功的时间晚于 reviveOffers 触发的时间，任务会发布失败吗？_"></a>问题 1:<strong>_Executor 申请成功的时间晚于 <code>reviveOffers</code> 触发的时间，任务会发布失败吗？_</strong></h4><p>在上述 <strong>步骤 1</strong> 和 <strong>步骤 2</strong> 中，Executor 可能在 <code>reviveOffers</code> 触发时还来不及启动，此时会返回空的 WorkerOffer 队列给 TaskScheduler。若出现这种情况，任务难道就直接失败了吗？</p>
+<p>我们先来看看 DriverEndpoint 的 <code>onStart</code> 方法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onStart</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="comment">// Periodically revive offers to allow delay scheduling to work</span></span><br><span class="line">  <span class="keyword">val</span> reviveIntervalMs = conf.get(<span class="type">SCHEDULER_REVIVE_INTERVAL</span>).getOrElse(<span class="number">1000</span>L)</span><br><span class="line"></span><br><span class="line">  reviveThread.scheduleAtFixedRate(() =&gt; <span class="type">Utils</span>.tryLogNonFatalError &#123;</span><br><span class="line">    <span class="type">Option</span>(self).foreach(_.send(<span class="type">ReviveOffers</span>))</span><br><span class="line">  &#125;, <span class="number">0</span>, reviveIntervalMs, <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法会启动一个定时器线程，默认情况下每隔 <code>1s</code> 会向 DriverEndPoint 发起 1 个 ReviveOffers 请求。</p>
+<p>看到这里，想必大家都已经知道答案了。<strong>即便SchedulerBackend 的 <code>reviveOffers</code> 触发时 Executor 还未启动成功，也不影响后续任务的发布。</strong> 因为定时器线程的循环触发意味着 TaskScheduler 的 <code>resourceOffers</code> 方法会被循环调用，这样在后续 Executor 启动成功后它一定有机会获取封装了 Executor 资源的 WorkerOffer 队列以发布任务池中的 Task。</p>
+<h4 id="问题-2-Executor-是一次性分配给所有-Task-还是根据资源数逐一分配？"><a href="#问题-2-Executor-是一次性分配给所有-Task-还是根据资源数逐一分配？" class="headerlink" title="问题 2:_Executor 是一次性分配给所有 Task 还是根据资源数逐一分配？_"></a>问题 2:<strong>_Executor 是一次性分配给所有 Task 还是根据资源数逐一分配？_</strong></h4><p>从 TaskScheduler 的 <code>resourceOffers</code> 方法中，我们截取了以下代码片段：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (taskSet &lt;- sortedTaskSets) &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 遍历当前支持的本地化调度级别</span></span><br><span class="line">  <span class="keyword">for</span> (currentMaxLocality &lt;- taskSet.myLocalityLevels) &#123;</span><br><span class="line">    <span class="comment">// 是否能在当前的本地化调度级别下成功分配 Executor 并启动任务</span></span><br><span class="line">    <span class="keyword">var</span> launchedTaskAtCurrentMaxLocality = <span class="literal">false</span></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">      <span class="comment">// 分配 Executor 资源给 TaskSet</span></span><br><span class="line">      <span class="keyword">val</span> (noDelayScheduleReject, minLocality) = resourceOfferSingleTaskSet(</span><br><span class="line">        taskSet, currentMaxLocality, shuffledOffers, availableCpus,</span><br><span class="line">        availableResources, tasks, addressesWithDescs)</span><br><span class="line">      <span class="comment">// 若 minLocality 为空，说明分配失败</span></span><br><span class="line">      launchedTaskAtCurrentMaxLocality = minLocality.isDefined</span><br><span class="line">      launchedAnyTask |= launchedTaskAtCurrentMaxLocality</span><br><span class="line">      noDelaySchedulingRejects &amp;= noDelayScheduleReject</span><br><span class="line">      globalMinLocality = minTaskLocality(globalMinLocality, minLocality)</span><br><span class="line">    &#125; <span class="keyword">while</span> (launchedTaskAtCurrentMaxLocality)</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>乍看之下，会以为是一次性为 TaskSet 中的所有任务分配 Executor，实际上并非如此，且看 <code>resourceOfferSingleTaskSet</code> 中的核心代码：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 遍历 Executor 资源</span></span><br><span class="line"><span class="keyword">for</span> (i &lt;- <span class="number">0</span> until shuffledOffers.size) &#123;</span><br><span class="line">  <span class="keyword">val</span> execId = shuffledOffers(i).executorId</span><br><span class="line">  <span class="keyword">val</span> host = shuffledOffers(i).host</span><br><span class="line">  <span class="keyword">val</span> taskSetRpID = taskSet.taskSet.resourceProfileId</span><br><span class="line">  <span class="keyword">if</span> (taskSetRpID == shuffledOffers(i).resourceProfileId) &#123;</span><br><span class="line">    <span class="comment">// 是否有多余的 CPU 资源，若没有，跳过</span></span><br><span class="line">    <span class="keyword">val</span> taskResAssignmentsOpt = resourcesMeetTaskRequirements(taskSet, availableCpus(i), availableResources(i))</span><br><span class="line">    taskResAssignmentsOpt.foreach &#123; taskResAssignments =&gt;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 分配 Executor 给某个 Task，若 Executor 与 Task 的预期 Executor 不匹配，则返回空</span></span><br><span class="line">        <span class="keyword">val</span> (taskDescOption, didReject) = taskSet.resourceOffer(execId, host, maxLocality, taskResAssignments)</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>简单阅读后发现，在 <code>resourceOfferSingleTaskSet</code> 中，是根据 Executor 的数量及其空闲 CPU 数来进行资源配对的。假设 TaskSet 中有 3 个 Task，Executor 数为 1 且可用 CPU 核数为 1，那么 <code>resourceOfferSingleTaskSet</code> 只会分配 Executor 给 <code>tasks(0)</code>，即 TaskSet 中的第一个 Task。分配后，由于没有可用的 CPU 资源，<code>resourcesMeetTaskRequirements</code> 方法会返回空，使得 <code>resourceOfferSingleTaskSet</code> 返回空的 <code>minLocality</code> ，造成循环跳出，最终导致剩余的 2 个 Task 在本次 <code>resourceOffers</code> 调度中不会分配到 Executor。</p>
+<p>看到这里，我们不禁产生疑问，<code>resourceOffers</code> 调用的 <strong>源头之一</strong> 是 SchedulerBackend 的 <code>reviveOffers()</code> 方法，且该方法只在提交阶段由 <code>sumbitTasks</code> 触发一次，那么剩下的 2 个 Task 要怎么去匹配 Executor 资源？</p>
+<p><strong>实际上，DriverEndPoint 的 <code>receive</code> 方法不仅仅是在接收到 ReviveOffers 请求时会触发 <code>resourceOffers</code>，在接收到 StatusUpdate 也可以。</strong> 这句话用一种更直观的方式表述就是，当 Executor 资源不足时，会先分配给序号靠前的 Task，当这些 Task 完成后，会释放占用的 Executor 核数，并在通知 DriverEndPoint 任务完成的同时触发 <code>resourceOffers</code>，使后面的 Task 可以享用已经空闲的 Executor，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/MLiLay/img/main/img/20240319195650.png" alt="image.png"></p>
+<p><strong>注</strong>：由于上述定时器线程的存在，即便 DriverEndPoint 在接收到 StatusUpdate 后不再触发 <code>resourceOffers</code>，剩余的任务也依旧可以发布出去。至于为什么 TaskScheduler 的 <code>resourceOffers</code> 方法会存在这种重复调用的情况，猜测可能是为了兼容不同的集群部署模式。</p>
+<h3 id="本地化调度"><a href="#本地化调度" class="headerlink" title="本地化调度"></a>本地化调度</h3><p>“移动计算”，即将计算任务移动到数据所在节点，是大数据计算中提升性能的一种手段。Spark 中的本地化调度机制，就是“移动计算”的实现方案。</p>
+<p>从 RDD 的 <code>preferredLocations</code> 方法，我们可以获得 Seq[TaskLocation]，它表示 RDD 分区所对应计算任务应该执行的位置。由于 TaskLocation 有多种实现类，其指向的位置也有多种，可能是在 <strong>内存</strong>，可能是在 <strong>磁盘</strong>，也可能是在 <strong>分布式文件系统</strong> 中。如果是在内存，我们希望 Task 发往内存中含有这个数据的 Executor；如果是在磁盘，我们希望 Task 发往存储着数据的服务器节点。</p>
+<p>根据这个目标，Spark 支持了 5 种级别的本地化调度方式，按优先级由高到低排序依次为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>级别</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PROCESS_LOCAL</td>
+<td>进程本地化，Task 和数据在同一个 Executor 中，性能最好</td>
+</tr>
+<tr>
+<td>NODE_LOCAL</td>
+<td>节点本地化，Task 和数据在同一个节点但是不在同一个 Executor，数据需要在进程间进行传输</td>
+</tr>
+<tr>
+<td>NO_PREF</td>
+<td>对于 Task 来说，从哪里获取都一样，没有好坏之分</td>
+</tr>
+<tr>
+<td>RACK_LOCAL</td>
+<td>机架本地化，Task 和数据在同一个机架的两个节点上，数据需要通过网络在节点之间进行传输</td>
+</tr>
+<tr>
+<td>ANY</td>
+<td>Task 和数据可以在集群的任何地方，甚至不在一个机架中，性能最差</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>注</strong>：<br>本地化调度级别按枚举值从高到低排序为 <code>ANY</code> → <code>RACK_LOCAL</code> → <code>NO_PREF</code> → <code>NODE_LOCAL</code> → <code>PROCESS_LOCAL</code>。</p>
+<h4 id="调度方式"><a href="#调度方式" class="headerlink" title="调度方式"></a>调度方式</h4><p>“移动计算”的本质是，已知数据的位置，将计算任务移动至数据所在位置。为实现这个目的，本地化调度做了两件事：</p>
+<ul>
+<li>初始化 PendingTasksByLocality，记录每个 Task 所期望的 Executor 集合</li>
+<li>比对 SchedulerBackend 所持有的真实的 Executor 资源，若与预期相符，则完成匹配，否则降级调度</li>
+</ul>
+<p>当 TaskSetManager 创建时，会初始化 PendingTasksByLocality。PendingTasksByLocality 中含有 3 个核心变量：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>变量名称</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>forExecutor</td>
+<td>存储所有任务期望的符合 PROCESS_LOCAL 级别的 <code>executorId</code></td>
+</tr>
+<tr>
+<td>forHost</td>
+<td>存储所有任务期望的符合 NODE_LOCAL 级别的 <code>executorId</code></td>
+</tr>
+<tr>
+<td>noPrefs</td>
+<td>存储所有任务期望的符合 RACK_LOCAL 级别的 <code>executorId</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中，各变量的初始化过程可见源码：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 遍历 Seq[TaskLocation]</span></span><br><span class="line"><span class="keyword">for</span> (loc &lt;- tasks(index).preferredLocations) &#123;</span><br><span class="line">  <span class="comment">// 初始化 PROCESS_LOCAL 级别的 Executor 集合</span></span><br><span class="line">  loc <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> e: <span class="type">ExecutorCacheTaskLocation</span> =&gt;</span><br><span class="line">      pendingTaskSetToAddTo.forExecutor.getOrElseUpdate(e.executorId, <span class="keyword">new</span> <span class="type">ArrayBuffer</span>) += index</span><br><span class="line">    <span class="keyword">case</span> e: <span class="type">HDFSCacheTaskLocation</span> =&gt;</span><br><span class="line">      <span class="keyword">val</span> exe = sched.getExecutorsAliveOnHost(loc.host)</span><br><span class="line">      exe <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(set) =&gt;</span><br><span class="line">          <span class="keyword">for</span> (e &lt;- set) &#123;</span><br><span class="line">            pendingTaskSetToAddTo.forExecutor.getOrElseUpdate(e, <span class="keyword">new</span> <span class="type">ArrayBuffer</span>) += index</span><br><span class="line">          &#125;</span><br><span class="line">          logInfo(<span class="string">s&quot;Pending task <span class="subst">$index</span> has a cached location at <span class="subst">$&#123;e.host&#125;</span> &quot;</span> +</span><br><span class="line">            <span class="string">&quot;, where there are executors &quot;</span> + set.mkString(<span class="string">&quot;,&quot;</span>))</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt; logDebug(<span class="string">s&quot;Pending task <span class="subst">$index</span> has a cached location at <span class="subst">$&#123;e.host&#125;</span> &quot;</span> +</span><br><span class="line">          <span class="string">&quot;, but there are no executors alive there.&quot;</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">case</span> _ =&gt;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 初始化 NODE_LOCAL 级别的 Executor 集合</span></span><br><span class="line">  pendingTaskSetToAddTo.forHost.getOrElseUpdate(loc.host, <span class="keyword">new</span> <span class="type">ArrayBuffer</span>) += index</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化 RACK_LOCAL 级别的 Executor 集合</span></span><br><span class="line">  <span class="keyword">if</span> (resolveRacks) &#123;</span><br><span class="line">    sched.getRackForHost(loc.host).foreach &#123; rack =&gt;</span><br><span class="line">      pendingTaskSetToAddTo.forRack.getOrElseUpdate(rack, <span class="keyword">new</span> <span class="type">ArrayBuffer</span>) += index</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (tasks(index).preferredLocations == <span class="type">Nil</span>) &#123;</span><br><span class="line">  pendingTaskSetToAddTo.noPrefs += index</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">pendingTaskSetToAddTo.all += index</span><br></pre></td></tr></table></figure>
+<p>当 TaskScheduler 的 <code>resourceOfferSingleTaskSet</code> 方法供给 Executor 资源时，TaskSetManager 的 <code>resourceOffer</code> 方法会通过调用 <code>dequeueTaskHelper</code> 确认期望的 <code>executorId</code> 是否与供给的 <code>executorId</code> 匹配，若认为配对成功，便返回 TaskDescription 对象，否则重新匹配。其源码的核心内容如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// forExecutor 中的资源是否有与 execId 相匹配的资源，若有，直接返回</span></span><br><span class="line">dequeue(pendingTaskSetToUse.forExecutor.getOrElse(execId, <span class="type">ArrayBuffer</span>())).foreach &#123; index =&gt;</span><br><span class="line">  <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">PROCESS_LOCAL</span>, speculative))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前支持的最大调度级别的枚举值是否大于 NODE_LOCAL</span></span><br><span class="line"><span class="comment">// maxLocality = NODE_LOCAL/NO_PREF/RACK_LOCAL/ANY 时触发</span></span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskLocality</span>.isAllowed(maxLocality, <span class="type">TaskLocality</span>.<span class="type">NODE_LOCAL</span>)) &#123;</span><br><span class="line">  <span class="comment">// forHost 中的资源是否有与 execId 相匹配的资源，若有，直接返回</span></span><br><span class="line">  dequeue(pendingTaskSetToUse.forHost.getOrElse(host, <span class="type">ArrayBuffer</span>())).foreach &#123; index =&gt;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">NODE_LOCAL</span>, speculative))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// maxLocality = NO_PREF/RACK_LOCAL/ANY 时触发</span></span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskLocality</span>.isAllowed(maxLocality, <span class="type">TaskLocality</span>.<span class="type">NO_PREF</span>)) &#123;</span><br><span class="line">  dequeue(pendingTaskSetToUse.noPrefs).foreach &#123; index =&gt;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">PROCESS_LOCAL</span>, speculative))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// maxLocality = RACK_LOCAL/ANY 时触发</span></span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskLocality</span>.isAllowed(maxLocality, <span class="type">TaskLocality</span>.<span class="type">RACK_LOCAL</span>)) &#123;</span><br><span class="line">  <span class="keyword">for</span> &#123;</span><br><span class="line">    rack &lt;- sched.getRackForHost(host)</span><br><span class="line">    index &lt;- dequeue(pendingTaskSetToUse.forRack.getOrElse(rack, <span class="type">ArrayBuffer</span>()))</span><br><span class="line">  &#125; &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">RACK_LOCAL</span>, speculative))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// maxLocality = ANY 时触发</span></span><br><span class="line"><span class="keyword">if</span> (<span class="type">TaskLocality</span>.isAllowed(maxLocality, <span class="type">TaskLocality</span>.<span class="type">ANY</span>)) &#123;</span><br><span class="line">  dequeue(pendingTaskSetToUse.all).foreach &#123; index =&gt;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Some</span>((index, <span class="type">TaskLocality</span>.<span class="type">ANY</span>, speculative))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">None</span></span><br></pre></td></tr></table></figure>
+<p><strong>注</strong>：PendingTasksByLocality 中的预期资源在匹配成功后会被移除，以避免可用资源充足的情况下发生重复分配，具体可参考 <code>dequeueTaskFromList</code> 方法。</p>
+<p>有时候期望的 Executor 资源无法在 <code>spark.locality.wait</code> 指定的时间范围内及时获取，此时会触发本地化调度级别的降级过程：<strong>仍然尝试以当前本地化调度级别发布任务，若依旧失败，则降低级别，尝试将期望级别较低的 Executor 资源提供给 Task，直至成功。</strong></p>
+<p><strong>注</strong>：如果发现大量计算任务的本地化调度级别跨节点甚至是跨机架，可以考虑增加 <code>spark.locality.wait</code> 的值，以适当提高本地化调度的等待时间。但是在大多数情况下，默认值 <code>3s</code> 是可以有效运作的。</p>
+<h2 id="执行阶段"><a href="#执行阶段" class="headerlink" title="执行阶段"></a>执行阶段</h2><p>执行阶段由 Executor 负责。</p>
+<p>在 Standalone 模式下，Executor 由独立的 JVM 进程 CoarseGrainedExecutorBackend 创建。</p>
+<p>Executor 的 <code>launchTask</code> 方法会启动执行阶段，它会将 TaskDescription 封装成 TaskRunner，然后交由线程池执行。当 TaskRunner 的 <code>run</code> 方法被线程池调度后，一个计算任务的执行就正式开始了。</p>
+<h4 id="STEP-01：依赖包下载"><a href="#STEP-01：依赖包下载" class="headerlink" title="STEP 01：依赖包下载"></a>STEP 01：依赖包下载</h4><p>Driver 端在发布任务的时候，会将所需的依赖信息注入到 TaskDescription 对象中。在 Executor 执行计算之前，需要先调用 <code>updateDependencies</code> 方法下载所需依赖包，并将其添加至 ClassLoader 中，以确保 Executor 完全具备执行 Task 的能力，关键代码如下所示：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Fetch file with useCache mode, close cache for local mode.</span></span><br><span class="line"><span class="type">Utils</span>.fetchFile(name, <span class="keyword">new</span> <span class="type">File</span>(<span class="type">SparkFiles</span>.getRootDirectory()), conf, env.securityManager, </span><br><span class="line">  hadoopConf, timestamp, useCache = !isLocal)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Add it to our class loader</span></span><br><span class="line"><span class="keyword">val</span> url = <span class="keyword">new</span> <span class="type">File</span>(<span class="type">SparkFiles</span>.getRootDirectory(), localName).toURI.toURL</span><br><span class="line"><span class="keyword">if</span> (!urlClassLoader.getURLs().contains(url)) &#123;</span><br><span class="line">  urlClassLoader.addURL(url)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="STEP-02：执行计算"><a href="#STEP-02：执行计算" class="headerlink" title="STEP 02：执行计算"></a>STEP 02：执行计算</h4><p>下载完依赖后，Executor 会将 TaskDescription 中的 <code>serializedTask</code> 反序列化为 Task 对象，然后通过 Task 对象的 <code>runTask</code> 方法执行计算。<code>runTask</code> 方法是抽象类，需要子类负责实现，所以真实的计算逻辑由 Task 的子类决定。</p>
+<p>在 Spark 中，Task 的子类有 ShuffleMapTask 和 ResultTask 两种。前者表示 ShuffleMapStage 中的任务；后者表示最终响应数据给 Application 的任务。</p>
+<p>若 Task 为 ShuffleMapTask，则 <code>runTask</code> 主要做的事情为：</p>
+<ul>
+<li>反序列化字节数组 <code>taskBinary</code>，获得 RDD 和 ShuffleDependency 实例</li>
+<li>从 SparkEnv 中获取 ShuffleManager，并通过 ShuffleManager 获取 ShuffleWriter 实例</li>
+<li>调用 RDD 的 <code>iterator</code> 方法执行计算，并使用 ShuffleWriter 将计算结果写入到 Executor 端的存储系统</li>
+<li><strong>返回 MapStatus 对象</strong>，该对象包含了 Executor 端的 BlockManager 地址</li>
+</ul>
+<p>若 Task 为 ResultTask，则 <code>runTask</code> 主要做的事情为：</p>
+<ul>
+<li>反序列化字节数组 <code>taskBinary</code>，获得 RDD 实例和用户函数 <code>func</code></li>
+<li>调用 RDD 的 <code>iterator</code> 方法获取迭代器，将其作为参数传入用户函数 <code>func</code> 执行计算，并 <strong>直接返回计算后的结果</strong></li>
+</ul>
+<p><strong>注</strong>：<code>iterator</code> 方法最终实际上调用的便是 RDD 的 <code>compute</code> 方法，<code>compute</code> 方法的具体实现由子类决定。</p>
+<h5 id="问题：用户函数-func-与-RDD-的-compute-方法是什么关系？哪一个是计算逻辑的执行者？"><a href="#问题：用户函数-func-与-RDD-的-compute-方法是什么关系？哪一个是计算逻辑的执行者？" class="headerlink" title="问题：用户函数 func 与 RDD 的 compute 方法是什么关系？哪一个是计算逻辑的执行者？"></a>问题：<strong>用户函数 <code>func</code> 与 RDD 的 <code>compute</code> 方法是什么关系？哪一个是计算逻辑的执行者？</strong></h5><p>用户函数 <code>func</code> 指的便是我们编写在算子中的计算逻辑，例如：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 转换算子中的 func</span></span><br><span class="line"><span class="keyword">val</span> wordMap: <span class="type">RDD</span>[(<span class="type">String</span>, <span class="type">Int</span>)] = words.map(x =&gt; &#123;</span><br><span class="line">  (x, <span class="number">1</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 行动算子中的 func</span></span><br><span class="line">rdd.foreach(x =&gt; &#123;</span><br><span class="line">  println(<span class="keyword">new</span> <span class="type">String</span>(x.value(), <span class="type">StandardCharsets</span>.<span class="type">UTF_8</span>))</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>直觉告诉我们，用户函数 <code>func</code> 会在 RDD 的 <code>compute</code> 方法中被调用，因此两者都可以算作计算逻辑的执行者，但实际上真的是如此吗？</p>
+<p>举例说明，如果仅看 MapPartitionsRDD 的 <code>compute</code> 方法，那么上面的结论是正确的：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">compute</span></span>(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">U</span>] =</span><br><span class="line">  f(context, split.index, firstParent[<span class="type">T</span>].iterator(split, context))</span><br></pre></td></tr></table></figure>
+<p>但在 KafkaRDD 中（以 <code>0.8</code> 版本为例），这个结论却是错误的，我们在 <code>compute</code> 方法看不到用户函数 <code>func</code> 的身影，只能看到它返回了一个数据集的迭代器：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">compute</span></span>(thePart: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">R</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> part = thePart.asInstanceOf[<span class="type">KafkaRDDPartition</span>]</span><br><span class="line">  assert(part.fromOffset &lt;= part.untilOffset, errBeginAfterEnd(part))</span><br><span class="line">  <span class="keyword">if</span> (part.fromOffset == part.untilOffset) &#123;</span><br><span class="line">    log.info(<span class="string">s&quot;Beginning offset <span class="subst">$&#123;part.fromOffset&#125;</span> is the same as ending offset &quot;</span> +</span><br><span class="line">      <span class="string">s&quot;skipping <span class="subst">$&#123;part.topic&#125;</span> <span class="subst">$&#123;part.partition&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="type">Iterator</span>.empty</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="type">KafkaRDDIterator</span>(part, context)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以结论是，用户函数 <code>func</code> 是计算逻辑的执行者，而 RDD 的 <code>compute</code> 方法是否参与了计算的执行还需要看其子类的具体实现。但有一点是肯定的，对于 ResultTask 而言，用户函数 <code>func</code> 和 RDD 的 <code>compute</code> 方法共同完成了计算逻辑的执行：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">runTask</span></span>(context: <span class="type">TaskContext</span>): <span class="type">U</span> = &#123;</span><br><span class="line">  <span class="comment">// Deserialize the RDD and the func using the broadcast variables.</span></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">val</span> (rdd, func) = ser.deserialize[(<span class="type">RDD</span>[<span class="type">T</span>], (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>)](</span><br><span class="line">    <span class="type">ByteBuffer</span>.wrap(taskBinary.value), <span class="type">Thread</span>.currentThread.getContextClassLoader)</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  func(context, rdd.iterator(partition, context))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="STEP-03：处理计算结果"><a href="#STEP-03：处理计算结果" class="headerlink" title="STEP 03：处理计算结果"></a>STEP 03：处理计算结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>类名称</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectTaskResult</td>
+<td>表示直接计算结果，以 ByteBuffer 存储计算后的结果</td>
+</tr>
+<tr>
+<td>IndirectTaskResult</td>
+<td>表示间接计算结果，仅存储 DirectTaskResult 在 BlockManager 的引用及其大小</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Executor 完成计算后，首先会对计算结果进行序列化，得到 DirectTaskResult 对象，主要代码如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> ser = env.closureSerializer.newInstance()</span><br><span class="line"><span class="keyword">val</span> resultSer = env.serializer.newInstance()</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> valueBytes = resultSer.serialize(value)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> directResult = <span class="keyword">new</span> <span class="type">DirectTaskResult</span>(valueBytes, accumUpdates, metricPeaks)</span><br><span class="line"><span class="keyword">val</span> serializedDirectResult = ser.serialize(directResult)</span><br><span class="line"><span class="comment">// 序列化结果的大小</span></span><br><span class="line"><span class="keyword">val</span> resultSize = serializedDirectResult.limit()</span><br></pre></td></tr></table></figure>
+<p>根据 <code>resultSize</code> 的大小，Executor 采用了 3 种不同的方式处理计算结果：</p>
+<ul>
+<li>若 <code>resultSize</code> &gt; <code>maxResultSize</code>，直接丢弃并转化为 IndirectTaskResult 回传给 Driver</li>
+<li>若 <code>resultSize</code> &gt; <code>maxDirectResultSize</code>，存储到 BlockManager 并转化为 IndirectTaskResult 回传给 Driver</li>
+<li>若 <code>resultSize</code> 不符合以上两种情况，直接回传给 Driver</li>
+</ul>
+<p><strong>注</strong>：</p>
+<ul>
+<li><p><code>maxResultSize</code> 表示最大结果大小，由 Spark 配置参数 <code>spark.driver.maxResultSize</code> 指定，默认值为 <code>1g</code>；</p>
+</li>
+<li><p><code>maxDirectResultSize</code> 表示最大直接回传结果大小，由 Spark 配置参数 <code>spark.task.maxDirectResultSize</code> 和 <code>spark.rpc.message.maxSize</code> 中的最小值决定，前者默认值为 <code>1MB</code>，后者默认值为 <code>128MB</code>。</p>
+</li>
+</ul>
+<p><strong>注</strong>：</p>
+<p><strong>若任务类型为 ShuffleMapTask，尽管返回给 Driver 的结果也是 DirectTaskResult，但实际上封装的是 MapStatus 的信息，并非真实的计算结果。</strong></p>
+<h2 id="回收阶段"><a href="#回收阶段" class="headerlink" title="回收阶段"></a>回收阶段</h2><p>回收阶段由 ExecutorBackend 的 <code>statusUpdate</code> 方法发起，在 Standalone 模式下，主要过程为：</p>
+<ol>
+<li>构造 StatusUpdate 对象（包含 <code>executorId</code>、<code>taskId</code>、<code>state</code>、<code>data</code> 等字段），发给 DriverEndPoint</li>
+<li>DriverEndPoint 接收请求后，调用 TaskScheduler 的 <code>statusUpdate</code> 方法接收回收任务</li>
+<li>若任务状态为 <code>FINISHED</code>，TaskResultGetter 的 <code>enqueueSuccessfulTask</code> 方法会对回收任务进行异步处理：<ul>
+<li>若接收结果为 DirectTaskResult，直接获取计算结果返回值</li>
+<li>若接收结果为 IndirectTaskResult，则先通过 <code>blockId</code> 找到 BlockManager，再获取计算结果返回值</li>
+</ul>
+</li>
+<li>调用 TaskSetManager 的 <code>handleSuccessfulTask</code> 方法，标记任务执行结果，并通知 DAGScheduler</li>
+<li>DAGScheduler 通过 <code>handleTaskCompletion</code> 方法完成最终的回收：<ul>
+<li>若任务类型为 ShuffleMapTask，<strong>将 MapStatus 注册到 MapOutputTracker</strong>，然后继续提交队列中的任务</li>
+<li>若任务类型为 ResultTask，标记 Job 为结束状态，<strong>上报计算结果到 JobWaiter 并回传给 Application</strong></li>
+</ul>
+</li>
+</ol>
+<p><strong>注</strong>：这里只有执行成功的回收过程，没有执行失败的过程。</p>
+<p>看到 JobWaiter，有些人可能会有些陌生。实际上，它不仅是任务调度的终点，也是任务调度的起点。回顾一下，我们最初触发行动算子时，会调用到 SparkContext 的 <code>runJob</code> 方法：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">runJob</span></span>[<span class="type">T</span>, <span class="type">U</span>: <span class="type">ClassTag</span>](</span><br><span class="line">    rdd: <span class="type">RDD</span>[<span class="type">T</span>],</span><br><span class="line">    func: (<span class="type">TaskContext</span>, <span class="type">Iterator</span>[<span class="type">T</span>]) =&gt; <span class="type">U</span>,</span><br><span class="line">    partitions: <span class="type">Seq</span>[<span class="type">Int</span>]): <span class="type">Array</span>[<span class="type">U</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> results = <span class="keyword">new</span> <span class="type">Array</span>[<span class="type">U</span>](partitions.size)</span><br><span class="line">  runJob[<span class="type">T</span>, <span class="type">U</span>](rdd, func, partitions, (index, res) =&gt; results(index) = res)</span><br><span class="line">  results</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中的 <code>results</code> 即为返回给 Application 的结果，它的赋值最终由 JobWaiter 完成，整个过程的核心代码如下：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DAGScheduler</span></span><br><span class="line"><span class="keyword">val</span> waiter = submitJob(rdd, func, partitions, callSite, resultHandler, properties)</span><br><span class="line"></span><br><span class="line"><span class="comment">// JobWaiter</span></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">taskSucceeded</span></span>(index: <span class="type">Int</span>, result: <span class="type">Any</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">  synchronized &#123;</span><br><span class="line">    resultHandler(index, result.asInstanceOf[<span class="type">T</span>])</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (finishedTasks.incrementAndGet() == totalTasks) &#123;</span><br><span class="line">    jobPromise.success(())</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">CHLi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/03/21/Spark-%E5%9F%BA%E7%A1%80-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%9C%BA%E5%88%B6/">http://example.com/2024/03/21/Spark-%E5%9F%BA%E7%A1%80-%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%9C%BA%E5%88%B6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Mr.Li's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><div class="post_share"><div class="social-share" data-image="/img/avatar.JPG" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/03/24/Algorithm-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm-数据结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Algorithm-数据结构</div></div></a></div><div class="next-post pull-right"><a href="/2024/03/21/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-HDFS%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" title="Hadoop-HDFS-数据读写"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hadoop-HDFS-数据读写</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/" title="Spark-基础-Shuffle机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-20</div><div class="title">Spark-基础-Shuffle机制</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-Cache%E4%B8%8Echeckpoint/" title="Spark-基础-Cache 与 Checkpoint"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-Cache 与 Checkpoint</div></div></a></div><div><a href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B/" title="Spark-基础-核心编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-20</div><div class="title">Spark-基础-核心编程</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%BC%8F/" title="Spark-基础-运行模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-运行模式</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E7%B4%AF%E5%8A%A0%E5%99%A8%E4%B8%8E%E5%B9%BF%E6%92%AD%E5%8F%98%E9%87%8F/" title="Spark-基础-累加器和Broadcast"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-累加器和Broadcast</div></div></a></div><div><a href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E9%80%9A%E8%AE%AF%E6%9C%BA%E5%88%B6/" title="Spark-基础-通信机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-19</div><div class="title">Spark-基础-通信机制</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Application%E3%80%81Job%E3%80%81Stage%E3%80%81Task"><span class="toc-number">1.1.</span> <span class="toc-text">Application、Job、Stage、Task</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Driver%E3%80%81Executor"><span class="toc-number">1.2.</span> <span class="toc-text">Driver、Executor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Driver"><span class="toc-number">1.2.1.</span> <span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Executor"><span class="toc-number">1.2.2.</span> <span class="toc-text">Executor</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">调度流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stage-%E5%88%92%E5%88%86"><span class="toc-number">2.</span> <span class="toc-text">Stage 划分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%92%E5%88%86%E8%A7%84%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">划分规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.2.</span> <span class="toc-text">代码实现</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-%E8%B0%83%E5%BA%A6"><span class="toc-number">3.</span> <span class="toc-text">Task 调度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="toc-number">3.1.</span> <span class="toc-text">初始化阶段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E9%98%B6%E6%AE%B5"><span class="toc-number">3.2.</span> <span class="toc-text">提交阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TaskSetManager"><span class="toc-number">3.2.0.1.</span> <span class="toc-text">TaskSetManager</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SchedulableBuilder"><span class="toc-number">3.2.0.2.</span> <span class="toc-text">SchedulableBuilder</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#FairSchedulableBuilder"><span class="toc-number">3.2.0.2.1.</span> <span class="toc-text">FairSchedulableBuilder</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E9%98%B6%E6%AE%B5"><span class="toc-number">3.3.</span> <span class="toc-text">启动阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95"><span class="toc-number">3.3.1.</span> <span class="toc-text">扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98-1-Executor-%E7%94%B3%E8%AF%B7%E6%88%90%E5%8A%9F%E7%9A%84%E6%97%B6%E9%97%B4%E6%99%9A%E4%BA%8E-reviveOffers-%E8%A7%A6%E5%8F%91%E7%9A%84%E6%97%B6%E9%97%B4%EF%BC%8C%E4%BB%BB%E5%8A%A1%E4%BC%9A%E5%8F%91%E5%B8%83%E5%A4%B1%E8%B4%A5%E5%90%97%EF%BC%9F"><span class="toc-number">3.3.1.1.</span> <span class="toc-text">问题 1:_Executor 申请成功的时间晚于 reviveOffers 触发的时间，任务会发布失败吗？_</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98-2-Executor-%E6%98%AF%E4%B8%80%E6%AC%A1%E6%80%A7%E5%88%86%E9%85%8D%E7%BB%99%E6%89%80%E6%9C%89-Task-%E8%BF%98%E6%98%AF%E6%A0%B9%E6%8D%AE%E8%B5%84%E6%BA%90%E6%95%B0%E9%80%90%E4%B8%80%E5%88%86%E9%85%8D%EF%BC%9F"><span class="toc-number">3.3.1.2.</span> <span class="toc-text">问题 2:_Executor 是一次性分配给所有 Task 还是根据资源数逐一分配？_</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%8C%96%E8%B0%83%E5%BA%A6"><span class="toc-number">3.3.2.</span> <span class="toc-text">本地化调度</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E6%96%B9%E5%BC%8F"><span class="toc-number">3.3.2.1.</span> <span class="toc-text">调度方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5"><span class="toc-number">3.4.</span> <span class="toc-text">执行阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#STEP-01%EF%BC%9A%E4%BE%9D%E8%B5%96%E5%8C%85%E4%B8%8B%E8%BD%BD"><span class="toc-number">3.4.0.1.</span> <span class="toc-text">STEP 01：依赖包下载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#STEP-02%EF%BC%9A%E6%89%A7%E8%A1%8C%E8%AE%A1%E7%AE%97"><span class="toc-number">3.4.0.2.</span> <span class="toc-text">STEP 02：执行计算</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E7%94%A8%E6%88%B7%E5%87%BD%E6%95%B0-func-%E4%B8%8E-RDD-%E7%9A%84-compute-%E6%96%B9%E6%B3%95%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F%E5%93%AA%E4%B8%80%E4%B8%AA%E6%98%AF%E8%AE%A1%E7%AE%97%E9%80%BB%E8%BE%91%E7%9A%84%E6%89%A7%E8%A1%8C%E8%80%85%EF%BC%9F"><span class="toc-number">3.4.0.2.1.</span> <span class="toc-text">问题：用户函数 func 与 RDD 的 compute 方法是什么关系？哪一个是计算逻辑的执行者？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#STEP-03%EF%BC%9A%E5%A4%84%E7%90%86%E8%AE%A1%E7%AE%97%E7%BB%93%E6%9E%9C"><span class="toc-number">3.4.0.3.</span> <span class="toc-text">STEP 03：处理计算结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E6%94%B6%E9%98%B6%E6%AE%B5"><span class="toc-number">3.5.</span> <span class="toc-text">回收阶段</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

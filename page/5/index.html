@@ -1,0 +1,305 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mr.Li&#39;s blog">
+<meta property="og:url" content="http://example.com/page/5/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:author" content="CHLi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/page/5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Mr.Li\'s blog',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-06-30 16:54:46'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">Mr.Li's blog</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-NameNode%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/" title="Hadoop-HDFS-NameNode内存结构">Hadoop-HDFS-NameNode内存结构</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-15T08:05:33.000Z" title="发表于 2024-03-15 16:05:33">2024-03-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">NaneNode 内存机制
+概述NameNode 管理着整个 HDFS 文件系统的元数据。从架构设计上看，元数据大致分成两个层次：
+
+Namespace 管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系；
+块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系 BlocksMap，如图 1 所示。
+
+
+Namespace 管理的元数据除内存常驻外，也会周期 Flush 到持久化设备上 FsImage 文件；
+BlocksMap 元数据只在内存中存在；
+NameNode 重启规则当 NameNode 发生重启。
+
+首先从持久化设备中读取 FsImage 构建 Namespace，
+之后根据 DataNode 的汇报信息重新构造 BlocksMap。
+
+这两部分数据结构是占据了 NameNode 大部分 JVM Heap 空间。除了对文件系统本身元数据的管理之外，NameNode还需要维护整个集群的机架及DataNode的信息、Lease管理以及集中式缓存引入的缓存管理等等。这几部分数据结构空间占用相对固定，且占用较小。
+内存全景如前述，NameNode整个内存 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/14/Hadoop-%E5%9F%BA%E7%A1%80-MapReducer-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-MapReduce-原理及调优">Hadoop-MapReduce-原理及调优</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-14T10:52:30.346Z" title="发表于 2024-03-14 18:52:30">2024-03-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">框架
+MapReducer 书主要可以分成五块，分别是在 MapTask 段的 Input（InputFormat），Mapper ，中间的 Shuffle 部分，还有 ReduceTask 端端 Reducer 和 Output（OutputFormat）。
+Input 端InputFormat切片与并行运算机制数据块：Block 是 HDFS 物理上把数据分成一块一块。数据块是 HDFS 存储数据单位。
+数据切片：数据切片只是在逻辑上对输入进行分片，并不会在磁盘上将其切分成片进行存储。 数据切片是MapReduce 程序计算输入数据的单位，一个切片会对应启动一个MapTask。
+
+就像图中如果切片大小是 100，那么对于 DataNode 创建的 MapTask 就要跨 Node 进行任务，这显然是不合理的，所以在默认情况下切片大小会等于 Block 大小，从而保证 MapTask 不会跨 Node 进行任务。
+还有需要注意的是切片的时候是对每一个文件单独进行切片的，并不是拼接所有数据后切片。
+Job 提交任务与切片源码详解Job 提交任务源码1234567891011121314 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/14/Hadoop-%E5%B8%B8%E8%A7%81%E7%AB%AF%E5%8F%A3/" title="Hadoop-常用接口">Hadoop-常用接口</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-14T07:15:40.604Z" title="发表于 2024-03-14 15:15:40">2024-03-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">常见端口Hadoop 3.xHDFS NameNode内部常用端口号8020/9000/9820
+供用户查询9870
+Yarn 查看允许情况8088
+历史服务器19888
+Hadoop 2. XHDFS NameNode内部常用端口号8020/9000
+供用户查询50070
+Yarn 查看允许情况8088
+历史服务器19888
+常用配置文件Hadoop 3. X
+Core-site. Xml
+Hdfs-site. Xml
+Yarn-site. Xml
+Mapred-site. Xml
+Workers
+
+Hadoop 3. X
+Core-site. Xml
+Hdfs-site. Xml
+Yarn-site. Xml
+Mapred-site. Xml
+Slaves
+
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%8E%8B%E7%BC%A9/" title="Hive-文件格式与压缩">Hive-文件格式与压缩</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-13T08:22:43.978Z" title="发表于 2024-03-13 16:22:43">2024-03-13</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hive/">Hive</a></span></div><div class="content">文件格式行存储的特点查询满足条件的一整行数据的时候，列存储则需要去每个聚集的字段找到对应的每个列的值，行存储只需要找到其中一个值，其余的值都在相邻地方，所以此时行存储查询的速度更快。
+列存储的特点因为每个字段的数据聚集存储，在查询只需要少数几个字段的时候，能大大减少读取的数据量；
+每个字段的数据类型一定是相同的，列式存储可以针对性的设计更好的设计压缩算法。
+前文提到的text file和sequence file都是基于行存储的，orc和parquet是基于列式存储的。
+ORCORC（Optimized Row Columnar）file format是Hive 0.11版里引入的一种列式存储的文件格式。ORC文件能够提高Hive读写数据和处理数据的性能。
+基本结构
+ORC 文件结构由三部分组成:
+
+条带（stripe）：ORC 文件存储数据的地方。
+文件脚注（file footer）：包含了文件中 stripe 的列表，每个 stripe 的行数，以及每个列的数据类型。它还包含每个列的最小值、最大值、行计数、 求和等聚合信息。
+postscript：含有压缩参数和压缩大小相关的信息。 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/13/Hive-%E5%9F%BA%E7%A1%80-%E5%88%86%E5%8C%BA%E5%92%8C%E5%88%86%E6%A1%B6/" title="Hive-分区和分桶">Hive-分区和分桶</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-13T07:57:30.308Z" title="发表于 2024-03-13 15:57:30">2024-03-13</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hive/">Hive</a></span></div><div class="content">区别分区是按照某个字段对表中的数据进行分区，分区只会创建不同的文件夹，文件中中包含数据
+分桶是在分区的文件夹中对数据再次按照指定的字段对数据进行分割，创建不同的数据子文件。
+分区Hive 中的分区就是把一张大表的数据按照业务需要分散的存储到多个目录，每个目录就称为该表的一个分区。在查询时通过 where 子句中的表达式选择查询所需要的分区，这样的查询效率会提高很多。
+注：分区表指定的字段也可以看作一个伪列，可以被选择和作为过滤条件。
+语法创建分区表12345678create table dept_partition(    deptno int,    --部门编号    dname  string, --部门名称    loc    string  --部门位置)    partitioned by (day string)    row format delimited fields terminated by &#x27;\t&#x27;;
+数据加载1234567-- Loadload data local inpath &#x27;/opt/module/hive/datas ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/08/Knowledge-Latex/" title="Knowledge-Latex">Knowledge-Latex</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-08T13:00:41.000Z" title="发表于 2024-03-08 21:00:41">2024-03-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Latex/">Latex</a></span></div><div class="content">
+
+
+
+符号
+latex
+
+
+
+
+$&lt;$
+&lt;
+
+
+$\leq$
+\leq
+
+
+$\geq$
+\geq
+
+
+$\lfloor x \rfloor$
+\lfloor x \rfloor
+
+
+$\lceil x \rceil$
+\lceil x \rceil
+
+
+$\left\{ \begin{array}{lr} a &amp; \ b &amp; \ c &amp; \end{array} \right.$
+\left\{ \begin{array}{lr} a &amp; \ b &amp; \ c &amp; \end{array} \right.
+
+
+$\sim$
+\sim
+
+
+$\rightarrow$
+\rightarrow
+
+
+$\Rightarrow$
+\Rightarrow
+
+
+$\nrightarrow$
+\nrightarrow
+
+
+$\leftrightarrow$
+\leftrightarrow
+
+
+$\Leftrightarrow$
+\Leftrightarrow
+
+
+$\varnothing$
+\varnothing
+
+
+$\subseteq$
+\ ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/08/Hive-%E5%9F%BA%E7%A1%80-%E8%BF%9E%E6%8E%A5%EF%BC%88join%EF%BC%8Cunion%EF%BC%89/" title="Hive-连接（join，union）">Hive-连接（join，union）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-08T04:54:28.000Z" title="发表于 2024-03-08 12:54:28">2024-03-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hive/">Hive</a></span></div><div class="content">JoinHive 中 的 Join 可分为 Common Join（Reduce阶段完成join）和 Map Join（Map 阶段完成 join）
+Common Join其实就是在 reduce 端进行 join 操作，一般是在 mapjoin 不能使用的时候进行。
+原理
+
+在 Map 端按照 join on 的条件列的值为 key 进行分区进行输出（如果有多个条件，mapper 端会会将多个 key 进行拼接成一个值，按照这个进行分区输出）
+在 Shuffle 阶段也会按照 Mapper 端输出的 key 进行分区输出
+输出的所有文件按照 key 在 Reducer 端进行 join。
+
+
+内连接一般写的时候可以写成 inner join 或者join
+效果是提取交集
+左连接左边集合中满足条件的进行关联后保留，一般写的时候写成 left join
+右连接右边集合中满足条件进行关联后保留，一般写的时候写成 right join
+全连接全关联的原理是先左关联再右关联，然后把结果用 union all 合并在一起，关联不到的字段被自动置为 NULL。是否指定 outer 关键字，对查询结 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/02/22/Algorithm-%E6%8E%92%E5%BA%8F%E4%B8%8E%E6%9F%A5%E6%89%BE/" title="Algorithm-排序与查找">Algorithm-排序与查找</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-02-22T05:29:31.377Z" title="发表于 2024-02-22 13:29:31">2024-02-22</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Algorithm/">Algorithm</a></span></div><div class="content">排序快速排序核心思想
+确定分界点：q[l] q[r] q[(l+r)/2] 随机
+区间调整：小的在左边，大的在右边
+递归处理左右两边
+
+代码模版12345678910111213void quick_sort(int q[], int l, int r)&#123;    if (l &gt;= r) return; // 用来判断数组是否为空    int i = l - 1, j = r + 1, x = q[l + r &gt;&gt; 1]; // 这里的起始位置取值与后面分化的时候中间值有关，最好取中间值。    while (i &lt; j)    &#123;        do i ++ ; while (q[i] &lt; x);        do j -- ; while (q[j] &gt; x);        if (i &lt; j) swap(q[i], q[j]);    &#125;    quick_sort(q, l, j), quick_sort(q, j + 1, r); // 这里中间可以用i&#125;
+左右排序流程两个指针，一左一右。 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/01/31/Hadoop-%E5%9F%BA%E7%A1%80-MapReduce-%E7%A4%BA%E4%BE%8B/" title="Hadoop-MapReduce-示例">Hadoop-MapReduce-示例</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-01-31T05:52:52.875Z" title="发表于 2024-01-31 13:52:52">2024-01-31</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">其实就是要重写 mapper 、reducer 和 driver 三个类
+WordCountMapper主要是重写 map 方法，对于进入的每行数据都会被执行，map 方法
+12345678910111213141516171819202122232425262728package org.lch.mapreduce.wordcount2;    import org.apache.hadoop.io.IntWritable;  import org.apache.hadoop.io.LongWritable;  import org.apache.hadoop.io.Text;  import org.apache.hadoop.mapreduce.Mapper;    import java.io.IOException;    /**   * KEYIN 输入的Key的类型，输入Key是文本中的字符的偏移量,LongWritable   * VALUEIN 输入的Value的类型，输入value是从偏移量开始每行的字符, Text   * KEYOUT 输出Key的类型，输出Ke ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/01/28/Hadoop-%E5%9F%BA%E7%A1%80-HDFS-API/" title="Hadoop-HDFS-API">Hadoop-HDFS-API</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-01-28T10:05:24.888Z" title="发表于 2024-01-28 18:05:24">2024-01-28</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">API 使用1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495package org.lch.hdfs;    import org.apache.hadoop.fs.*;  import org.apache.hadoop.conf.Configuration;  import org.junit.After;  import org.junit.Before;  import org.junit.Test;    import java.io.IOException;  import java.net.URI;  import java.net.URISyntaxException;  import java.util.Arrays;      public class Hd ...</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/4/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/#content-inner">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/#content-inner">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/#content-inner">8</a><a class="extend next" rel="next" href="/page/6/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Algorithm/"><span class="card-category-list-name">Algorithm</span><span class="card-category-list-count">14</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Course/"><span class="card-category-list-name">Course</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hadoop/"><span class="card-category-list-name">Hadoop</span><span class="card-category-list-count">9</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hive/"><span class="card-category-list-name">Hive</span><span class="card-category-list-count">7</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Kafka/"><span class="card-category-list-name">Kafka</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Latex/"><span class="card-category-list-name">Latex</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/MySQL/"><span class="card-category-list-name">MySQL</span><span class="card-category-list-count">6</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/NIO/"><span class="card-category-list-name">NIO</span><span class="card-category-list-count">4</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Algorithm/" style="font-size: 1.45em; color: rgb(137, 82, 44)">Algorithm</a><a href="/tags/Hadoop/" style="font-size: 1.35em; color: rgb(128, 45, 73)">Hadoop</a><a href="/tags/Hive/" style="font-size: 1.3em; color: rgb(70, 198, 153)">Hive</a><a href="/tags/Kafka/" style="font-size: 1.2em; color: rgb(180, 50, 183)">Kafka</a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 1.35em; color: rgb(176, 23, 123)">机器学习</a><a href="/tags/Latex/" style="font-size: 1.15em; color: rgb(139, 27, 79)">Latex</a><a href="/tags/markdown/" style="font-size: 1.15em; color: rgb(174, 193, 198)">markdown</a><a href="/tags/MySQL/" style="font-size: 1.25em; color: rgb(14, 152, 75)">MySQL</a><a href="/tags/NIO/" style="font-size: 1.2em; color: rgb(182, 144, 93)">NIO</a><a href="/tags/Spark/" style="font-size: 1.4em; color: rgb(8, 144, 22)">Spark</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 1.2em; color: rgb(143, 143, 43)">数据分析</a><a href="/tags/Zookeeper/" style="font-size: 1.15em; color: rgb(47, 123, 194)">Zookeeper</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/05/"><span class="card-archive-list-date">五月 2024</span><span class="card-archive-list-count">10</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><span class="card-archive-list-count">12</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/03/"><span class="card-archive-list-date">三月 2024</span><span class="card-archive-list-count">25</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/02/"><span class="card-archive-list-date">二月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">一月 2024</span><span class="card-archive-list-count">3</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/12/"><span class="card-archive-list-date">十二月 2023</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/10/"><span class="card-archive-list-date">十月 2023</span><span class="card-archive-list-count">11</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">2</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">73</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-06-30T08:54:46.652Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

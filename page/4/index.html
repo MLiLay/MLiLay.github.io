@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mr.Li's blog</title><meta name="author" content="CHLi"><meta name="copyright" content="CHLi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mr.Li&#39;s blog">
+<meta property="og:url" content="http://example.com/page/4/index.html">
+<meta property="og:site_name" content="Mr.Li&#39;s blog">
+<meta property="og:description" content="Welcome to Mr.Li&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.JPG">
+<meta property="article:author" content="CHLi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.JPG"><link rel="shortcut icon" href="/img/spaceshuttle.png"><link rel="canonical" href="http://example.com/page/4/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Mr.Li\'s blog',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-06-30 16:54:46'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.JPG" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/topGraph.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Mr.Li's blog"><span class="site-name">Mr.Li's blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">Mr.Li's blog</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/21/Hive-%E5%9F%BA%E7%A1%80-%E5%BA%95%E5%B1%82%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/" title="Hive-sql执行顺序">Hive-sql执行顺序</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-21T10:51:57.000Z" title="发表于 2024-03-21 18:51:57">2024-03-21</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hive/">Hive</a></span></div><div class="content">编译成 MapReduce 过程
+词法、语法解析: Antlr 定义 SQL 的语法规则，完成 SQL 词法，语法解析，将 SQL 转化为抽象语法树 AST Tree；
+
+
+Antlr是一种语言识别的工具，可以用来构造领域语言。使用Antlr构造特定的语言只需要编写一个语法文件，定义词法和语法替换规则即可，Antlr完成了词法分析、语法分析、语义分析、中间代码生成的过程。
+
+
+语义解析: 遍历 AST Tree，抽象出查询的基本组成单元 QueryBlock；
+生成逻辑执行计划: 遍历 QueryBlock，翻译为执行操作树 OperatorTree；
+优化逻辑执行计划: 逻辑层优化器进行 OperatorTree 变换，合并 Operator，达到减少 MapReduce Job，减少数据传输及 shuffle 数据量；
+生成物理执行计划: 遍历 OperatorTree，翻译为 MapReduce 任务；
+优化物理执行计划: 物理层优化器进行 MapReduce 任务的变换，生成最终的执行计划。
+
+底层执行过程
+Hive 底层执行架构
+在 Hive 这一侧，总共有五个组件：
+
+UI ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/21/Hive-%E5%9F%BA%E7%A1%80-sql%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" title="Hive-sql执行顺序">Hive-sql执行顺序</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-21T10:46:57.000Z" title="发表于 2024-03-21 18:46:57">2024-03-21</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hive/">Hive</a></span></div><div class="content">执行顺序123456789(8) SELECT (9)DISTINCT&lt;Select_list&gt;(1) FROM &lt;left_table&gt; (3) &lt;join_type&gt;JOIN&lt;right_table&gt;(2) ON&lt;join_condition&gt;(4) WHERE&lt;where_condition&gt;(5) GROUP BY&lt;group_by_list&gt;(6) WITH &#123;CUBE|ROLLUP&#125;(7) HAVING&lt;having_condtion&gt;(10) ORDER BY&lt;order_by_list&gt;(11) LIMIT&lt;limit_number&gt;</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-Shuffle%E6%9C%BA%E5%88%B6/" title="Spark-基础-Shuffle机制">Spark-基础-Shuffle机制</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-20T08:46:31.343Z" title="发表于 2024-03-20 16:46:31">2024-03-20</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">更详细版本看 Spark-Shuffle
+概述Shuffle 翻译成中文是洗牌的意思。在 Spark 中，Shuffle 也确实担当了“洗牌”的角色，它会对 ShuffleMapStage 中 RDD 的数据进行重分区，以实现不同分区间的数据分组。这是分布式计算中不可或缺的一项特性。
+为了更直观地解释 Shuffle 的概念，我们以 WordCount 为例展示 Shuffle 运作的过程：
+
+在这个例子中，我们发现，借助 Shuffle，不同分区中属于同一个 key 的数据得以聚合到同一个下游分区中。如图中的 panda，它原本分散在 2 个 RDD 分区，经 Shuffle 后重组到了同一个分区中。不过，显而易见的是，为了实现这个过程，Shuffle需要在不同 Executor 甚至是不同主机间复制数据，这导致 Shuffle 成为一种复杂且成本高昂的操作。
+发展历程自 Spark 面世以来，它的 Shuffle 模块历经了多次迭代 ：
+
+Spark 0.8 及以前使用 Hash Based Shuffle
+Spark 0.8.1 为 Hash Based Shuffle 引入 F ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/20/Spark-%E5%9F%BA%E7%A1%80-%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B/" title="Spark-基础-核心编程">Spark-基础-核心编程</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-20T07:09:21.779Z" title="发表于 2024-03-20 15:09:21">2024-03-20</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">RDD定义RDD（Resilient Distributed Dataset）叫做弹性分布式数据集，是 Spark 中最基本的数据处理模型。代码中是一个抽象类，它代表一个弹性的、不可变、可分区、里面的元素可并行计算的集合。
+弹性
+存储的弹性：内存与磁盘的自动切换；
+容错的弹性：数据丢失可以自动恢复；
+计算的弹性：计算出错重试机制；
+分片的弹性：可根据需要重新分片。
+
+分布式数据存储在大数据集群不同节点上
+数据集RDD 封装了计算逻辑，并不保存数据
+数据抽象RDD 是一个抽象类，需要子类具体实现
+不可变RDD 封装了计算逻辑，是不可以改变的，想要改变，只能产生新的 RDD，在新的 RDD 里面封装计算逻辑
+可分区、并行计算基础编程RDD 创建内部创建有两种方式对 RDD 进行创建，分别是 Paralleize 和 makeRDD。
+1234567val sparkConf =new SparkConf().setMaster(&quot;local[*]&quot;).setAppName(&quot;spark&quot;) val sparkContext = new SparkCo ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E9%80%9A%E8%AE%AF%E6%9C%BA%E5%88%B6/" title="Spark-基础-通信机制">Spark-基础-通信机制</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-19T11:23:09.002Z" title="发表于 2024-03-19 19:23:09">2024-03-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">核心概念Spark 的 RPC 模块主要负责 Spark 集群中各节点间（比如 Driver 与 Executor）通信功能的实现。
+自 2.x 版本后，Spark 剥离了 RPC 框架 Akka，并基于 Netty 实现了新的 RPC 框架。尽管 Akka 已经被剥离，但新版的 RPC 框架仍然借鉴了 Akka 的 Actor 模型的设计思想，以 RpcEnv、RpcEndpoint、RpcEndpointRef 分别替代 Actor 中的 ActorSystem、Actor、ActorRef。
+RpcEnv
+RPC 上下文环境，负责 RpcEndpoint 整个生命周期的管理（包括 RpcEndpoint 的注册、停止等）。
+RpcEndpoint
+进行消息处理的通信终端（可位于 Master、Worker、Driver 等），它的生命周期包含如下过程：
+_constructor → onStart → receive_ → onStop*
+其中，receive* 分为 receive 和 receiveAndReply 两种方法，前者用于响应 RpcEndpointRef 的 s ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E8%BF%90%E8%A1%8C%E6%A8%A1%E5%BC%8F/" title="Spark-基础-运行模式">Spark-基础-运行模式</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-19T08:42:46.194Z" title="发表于 2024-03-19 16:42:46">2024-03-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">运行总流程
+Local 模式故名思义就是在本地运行，并不上传集群。
+Standalone 模式就是传统的 Master 和 Slave 的模式
+独立部署（Standalone）模式由 Spark 自身提供计算资源，无需其他框架提供资源。这种方式降低了和其他第三方资源框架的耦合性，独立性非常强。
+Standalone 集群有 2 个重要组成部分，分别是：
+1) Master(RM)：是一个进程，主要负责资源的调度和分配，并进行集群的监控等职责；
+2) Worker(NM)：是一个进程，一个Worker 运行在集群中的一台服务器上，主要负责两个
+职责，一个是用自己的内存存储 RDD 的某个或某些 partition；另一个是启动其他进程
+和线程（Executor），对RDD 上的partition 进行并行的处理和计算。
+Cluster运行流程其实和 yarn 的差不多，只是 Executor 运行在 worker 上，然后 Driver 也由一个单独的 worker 来运行
+Client
+区别区别在于 Driver 运行在 Worker 上还是运行在本地机器上。
+Yarn 模式就是将 Y ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-%E7%B4%AF%E5%8A%A0%E5%99%A8%E4%B8%8E%E5%B9%BF%E6%92%AD%E5%8F%98%E9%87%8F/" title="Spark-基础-累加器和Broadcast">Spark-基础-累加器和Broadcast</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-19T07:57:02.993Z" title="发表于 2024-03-19 15:57:02">2024-03-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">累加器累加器用来把 Executor 端变量信息聚合到 Driver 端。在 Driver 程序中定义的变量，在Executor 端的每个Task 都会得到这个变量的一份新的副本，每个task 更新这些副本的值后，传回Driver 端进行merge。
+通俗得讲就是 Executor 每个人算一次，算完后到 Driver 端进行聚合。
+系统累加器1234567891011val rdd = sc.makeRDD(List(1,2,3,4,5))// 声明累加器var sum = sc.longAccumulator(&quot;sum&quot;);rdd.foreach(	num =&gt; &#123;		// 使用累加器		sum.add(num)	&#125;)// 获取累加器的值println(&quot;sum = &quot; + sum.value)
+自定义累加器123456789101112131415161718192021222324252627282930313233343536373839// 自定义累加器// 1. 继承 AccumulatorV2，并设定泛型 ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/19/Spark-%E5%9F%BA%E7%A1%80-Cache%E4%B8%8Echeckpoint/" title="Spark-基础-Cache 与 Checkpoint">Spark-基础-Cache 与 Checkpoint</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-19T07:45:53.403Z" title="发表于 2024-03-19 15:45:53">2024-03-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Spark/">Spark</a></span></div><div class="content">Cache由于 RDD 是记录血缘关系，根据血缘关系计算结果。如果过程中有 RDD 被多次使用，那么此时未避免多次重复计算，可以使用 Cache()，对该 RDD 进行缓存，该 RDD 会被存储至内存中供后面的 RDD 进行调用。
+123456789101112131415161718192021// cache操作会增加血缘关系，不改变原有的血缘关系println(wordToOneRdd.toDebugString)// 数据缓存。wordToOneRdd.cache()// 可以更改存储级别mapRdd.persist(StorageLevel.MEMORY_AND_DISK_2)// 存储级别object StorageLevel &#123;val NONE = new StorageLevel(false, false, false, false)val DISK_ONLY = new StorageLevel(true, false, false, false)val DISK_ONLY_2 = new StorageLevel(true, false, false, f ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/18/zookeeper/" title="Zookeeper">Zookeeper</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-18T06:37:41.920Z" title="发表于 2024-03-18 14:37:41">2024-03-18</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Zookeeper/">Zookeeper</a></span></div><div class="content">概述工作机制是一个基于观察者模式设计的分布式服务管理框架
+它负责存储和管理大家都关心的数据，然后接受观察者的注册，一旦这些数据的状态发生变化，Zookeeper就将负责通知已经在Zookeeper上注册的那些观察者做出相应的反应。
+注：zookeeper 上存储的数据一般都是很少的数据，可能就是个名字或者一句话。
+特点
+
+Zookeeper：一个领导者（Leader），多个跟随者（Follower）组成的集群。
+
+集群中只要有半数以上节点存活，Zookeeper 集群就能正常服务。所以 Zookeeper 适合安装奇数台服务器。
+
+全局数据一致：每个 Server 保存一份相同的数据副本，Client 无论连接到哪个 Server，数据都是一致的。
+
+更新请求顺序执行，来自同一个 Client 的更新请求按其发送顺序依次执行。
+
+数据更新原子性，一次数据更新要么成功，要么失败。
+
+实时性，在一定时间范围内，Client 能读到最新数据。
+
+
+数据结构ZooKeeper 数据模型的结构与 Unix 文件系统很类似，整体上可以看作是一棵树，每个节点称做一个 ZNode。每一个 ZNode  ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2024/03/15/Hadoop-%E5%9F%BA%E7%A1%80-Yarn-%E5%8E%9F%E7%90%86%E5%8F%8A%E8%B0%83%E4%BC%98/" title="Hadoop-Yarn-原理及调优">Hadoop-Yarn-原理及调优</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-03-15T08:40:35.000Z" title="发表于 2024-03-15 16:40:35">2024-03-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Hadoop/">Hadoop</a></span></div><div class="content">架构
+工作机制
+
+MR 程序提交到客户端所在的节点。
+YarnRunner 向 ResourceManager 申请一个 Application。
+RM 将该应用程序的资源路径返回给 YarnRunner。
+该程序将运行所需资源提交到 HDFS 上。
+程序资源提交完毕后，申请运行 mrAppMaster。
+RM 将用户的请求初始化成一个 Task。
+其中一个 NodeManager 领取到 Task 任务。
+该 NodeManager 创建容器 Container，并产生 MRAppmaster。
+Container 从 HDFS 上拷贝资源到本地。
+MRAppmaster 向 RM 申请运行 MapTask 资源。
+RM 将运行 MapTask 任务分配给另外两个 NodeManager，另两个 NodeManager 分别领取任务并创建容器。
+MR 向两个接收到任务的 NodeManager 发送程序启动脚本，这两个 NodeManager 分别启动 MapTask，MapTask 对数据分区排序。
+MrAppMaster 等待所有 MapTask 运行完毕后，向 RM 申请容器， ...</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/3/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/#content-inner">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/#content-inner">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/#content-inner">8</a><a class="extend next" rel="next" href="/page/5/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.JPG" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CHLi</div><div class="author-info__description">Welcome to Mr.Li's blog</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/MLiLay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome! This is MLiLay's Blog.</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E4%B8%8E%E9%9B%B6%E6%8B%B7%E8%B4%9D/" title="NIO-NIO与零拷贝">NIO-NIO与零拷贝</a><time datetime="2024-05-18T06:57:04.000Z" title="发表于 2024-05-18 14:57:04">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%EF%BC%88%E8%81%8A%E5%A4%A9%E6%A8%A1%E5%9E%8B%EF%BC%89/" title="NIO-聊天模型">NIO-聊天模型</a><time datetime="2024-05-18T06:32:05.000Z" title="发表于 2024-05-18 14:32:05">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO/" title="NIO-概述">NIO-概述</a><time datetime="2024-05-18T06:27:06.000Z" title="发表于 2024-05-18 14:27:06">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/18/NIO%E3%80%81BIO%E5%92%8CAIO%E7%9A%84%E5%8C%BA%E5%88%AB/" title="NIO-NIO、BIO和AIO区别">NIO-NIO、BIO和AIO区别</a><time datetime="2024-05-18T06:22:07.000Z" title="发表于 2024-05-18 14:22:07">2024-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/14/Spark-%E9%9D%A2%E8%AF%95%E9%A2%98-Spark%20on%20Yarn%20%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%93%AA%E4%BA%9B%E4%BC%98%E7%82%B9%EF%BC%9F/" title="Spark-面试题-Spark on yarn模式有哪些优点">Spark-面试题-Spark on yarn模式有哪些优点</a><time datetime="2024-05-14T12:52:43.528Z" title="发表于 2024-05-14 20:52:43">2024-05-14</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Algorithm/"><span class="card-category-list-name">Algorithm</span><span class="card-category-list-count">14</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Course/"><span class="card-category-list-name">Course</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hadoop/"><span class="card-category-list-name">Hadoop</span><span class="card-category-list-count">9</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Hive/"><span class="card-category-list-name">Hive</span><span class="card-category-list-count">7</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Kafka/"><span class="card-category-list-name">Kafka</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Latex/"><span class="card-category-list-name">Latex</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/MySQL/"><span class="card-category-list-name">MySQL</span><span class="card-category-list-count">6</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/NIO/"><span class="card-category-list-name">NIO</span><span class="card-category-list-count">4</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Algorithm/" style="font-size: 1.45em; color: rgb(137, 82, 44)">Algorithm</a><a href="/tags/Hadoop/" style="font-size: 1.35em; color: rgb(128, 45, 73)">Hadoop</a><a href="/tags/Hive/" style="font-size: 1.3em; color: rgb(70, 198, 153)">Hive</a><a href="/tags/Kafka/" style="font-size: 1.2em; color: rgb(180, 50, 183)">Kafka</a><a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 1.35em; color: rgb(176, 23, 123)">机器学习</a><a href="/tags/Latex/" style="font-size: 1.15em; color: rgb(139, 27, 79)">Latex</a><a href="/tags/markdown/" style="font-size: 1.15em; color: rgb(174, 193, 198)">markdown</a><a href="/tags/MySQL/" style="font-size: 1.25em; color: rgb(14, 152, 75)">MySQL</a><a href="/tags/NIO/" style="font-size: 1.2em; color: rgb(182, 144, 93)">NIO</a><a href="/tags/Spark/" style="font-size: 1.4em; color: rgb(8, 144, 22)">Spark</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="font-size: 1.2em; color: rgb(143, 143, 43)">数据分析</a><a href="/tags/Zookeeper/" style="font-size: 1.15em; color: rgb(47, 123, 194)">Zookeeper</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/05/"><span class="card-archive-list-date">五月 2024</span><span class="card-archive-list-count">10</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><span class="card-archive-list-count">12</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/03/"><span class="card-archive-list-date">三月 2024</span><span class="card-archive-list-count">25</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/02/"><span class="card-archive-list-date">二月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">一月 2024</span><span class="card-archive-list-count">3</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/12/"><span class="card-archive-list-date">十二月 2023</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/10/"><span class="card-archive-list-date">十月 2023</span><span class="card-archive-list-count">11</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">七月 2023</span><span class="card-archive-list-count">2</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">73</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-06-30T08:54:46.652Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By CHLi</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
